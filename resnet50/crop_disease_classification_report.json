@@ -1,0 +1,111 @@
+{
+    "Cashew healthy": {
+        "precision": 0.9130434782608695,
+        "recall": 0.9722222222222222,
+        "f1-score": 0.9417040358744395,
+        "support": 108.0
+    },
+    "Cashew leaf miner": {
+        "precision": 0.9814814814814815,
+        "recall": 0.9298245614035088,
+        "f1-score": 0.954954954954955,
+        "support": 114.0
+    },
+    "Cashew red rust": {
+        "precision": 1.0,
+        "recall": 0.9537037037037037,
+        "f1-score": 0.976303317535545,
+        "support": 108.0
+    },
+    "Fungi": {
+        "precision": 0.9565217391304348,
+        "recall": 0.8461538461538461,
+        "f1-score": 0.8979591836734694,
+        "support": 78.0
+    },
+    "Healthy": {
+        "precision": 0.75,
+        "recall": 1.0,
+        "f1-score": 0.8571428571428571,
+        "support": 36.0
+    },
+    "Maize healthy": {
+        "precision": 0.8611111111111112,
+        "recall": 0.9117647058823529,
+        "f1-score": 0.8857142857142857,
+        "support": 34.0
+    },
+    "Maize leaf blight": {
+        "precision": 0.860655737704918,
+        "recall": 0.9051724137931034,
+        "f1-score": 0.8823529411764706,
+        "support": 116.0
+    },
+    "Maize streak virus": {
+        "precision": 0.8888888888888888,
+        "recall": 0.810126582278481,
+        "f1-score": 0.847682119205298,
+        "support": 79.0
+    },
+    "Nematode": {
+        "precision": 0.8571428571428571,
+        "recall": 0.6,
+        "f1-score": 0.7058823529411765,
+        "support": 10.0
+    },
+    "Tomato healthy": {
+        "precision": 0.9764705882352941,
+        "recall": 0.9431818181818182,
+        "f1-score": 0.9595375722543352,
+        "support": 88.0
+    },
+    "Tomato septoria leaf spot": {
+        "precision": 0.9636363636363636,
+        "recall": 0.381294964028777,
+        "f1-score": 0.5463917525773195,
+        "support": 139.0
+    },
+    "Tomato verticulium wilt": {
+        "precision": 0.6017699115044248,
+        "recall": 0.9927007299270073,
+        "f1-score": 0.7493112947658402,
+        "support": 137.0
+    },
+    "bacterial_leaf_blight": {
+        "precision": 1.0,
+        "recall": 0.8888888888888888,
+        "f1-score": 0.9411764705882353,
+        "support": 9.0
+    },
+    "brown_spot": {
+        "precision": 0.6630434782608695,
+        "recall": 0.8840579710144928,
+        "f1-score": 0.7577639751552795,
+        "support": 69.0
+    },
+    "leaf_blast": {
+        "precision": 0.8444444444444444,
+        "recall": 0.5588235294117647,
+        "f1-score": 0.672566371681416,
+        "support": 68.0
+    },
+    "rice_healthy": {
+        "precision": 0.9565217391304348,
+        "recall": 0.9777777777777777,
+        "f1-score": 0.967032967032967,
+        "support": 90.0
+    },
+    "accuracy": 0.8487918939984411,
+    "macro avg": {
+        "precision": 0.8796707386832745,
+        "recall": 0.8472308571667341,
+        "f1-score": 0.8464672782671181,
+        "support": 1283.0
+    },
+    "weighted avg": {
+        "precision": 0.8796494912460356,
+        "recall": 0.8487918939984411,
+        "f1-score": 0.8417519456212503,
+        "support": 1283.0
+    }
+}

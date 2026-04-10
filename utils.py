@@ -1,0 +1,70 @@
+import yaml
+import torch
+import os
+from typing import Literal
+from torchvision import transforms
+
+def get_config(config_file='config.yaml'):
+    config = None
+    with open(config_file, 'r') as f:
+        config = yaml.safe_load(f)
+    return config
+
+def get_device():
+    return torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
+def get_transform(mode: Literal['train', 'val', 'test']):
+    mean = (0.485, 0.456, 0.406)
+    std = (0.229, 0.224, 0.225)
+
+    config = get_config()
+    img_size = config['image_size']
+
+    transform_dict = {
+        'train': transforms.Compose([
+            transforms.RandomResizedCrop(img_size),  # Random crop and resize
+            transforms.RandomHorizontalFlip(p=0.5),
+            transforms.RandomVerticalFlip(p=0.3),
+            transforms.RandomRotation(degrees=15),  # Random rotation
+            transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.1),  # Color augmentation
+            transforms.RandomAffine(degrees=0, translate=(0.1, 0.1)),  # Random translation
+            transforms.GaussianBlur(kernel_size=3, sigma=(0.1, 2.0)),  # Slight blur
+            transforms.ToTensor(),
+            transforms.Normalize(mean, std),
+            transforms.RandomErasing(p=0.1, scale=(0.02, 0.33), ratio=(0.3, 3.3)),  # Random erasing
+        ]),
+        'val': transforms.Compose([
+            transforms.ToTensor(),
+            transforms.Resize((img_size, img_size)),
+            transforms.Normalize(mean=mean, std=std),
+        ]),
+        'test': transforms.Compose([
+            transforms.ToTensor(),
+            transforms.Resize((img_size, img_size)),
+            transforms.Normalize(mean=mean, std=std),
+        ]),
+    }
+
+    return transform_dict[mode]
+
+def get_target_transform():
+    return transforms.Lambda(lambda x: torch.tensor(x, dtype=torch.long))
+
+def save_checkpoint(model_name, checkpoint_name, model, optimizer, cur_epoch, best_val_loss):
+    os.makedirs(model_name, exist_ok=True)
+    checkpoint_path = os.path.join(model_name, checkpoint_name)
+    torch.save({
+        'model_state_dict': model.state_dict(),
+        'optimizer_state_dict': optimizer.state_dict(),
+        'cur_epoch': cur_epoch,
+        'best_val_loss': best_val_loss,
+    }, checkpoint_path)
+
+def load_checkpoint(checkpoint_path, model, best_model_state, optimizer):
+    checkpoint = torch.load(checkpoint_path, map_location=get_device(), weights_only=True)
+    best_model_state.load_state_dict(checkpoint['model_state_dict'])
+    model.load_state_dict(checkpoint['model_state_dict'])
+    optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+    cur_epoch = checkpoint['cur_epoch']
+    best_val_loss = checkpoint['best_val_loss']
+    return cur_epoch, best_val_loss
