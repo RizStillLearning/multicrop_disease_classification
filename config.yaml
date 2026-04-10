@@ -4,4 +4,4 @@ dataset_dir: './data/'
 image_size: 224
 learning_rate: 0.001
 batch_size: 32
-num_epoch: 30
+num_epoch: 100

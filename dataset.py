@@ -19,20 +19,17 @@ class CropDiseaseDataset(Dataset):
     def __getitem__(self, idx):
         row = self.df.iloc[idx]
         image = row['image']
-        crop = row['crop']
         crop_disease = row['crop_disease']
 
         if self.transform:
             image = self.transform(image)
         if self.target_transform:
-            crop = self.target_transform(crop)
             crop_disease = self.target_transform(crop_disease)
         
-        return image, (crop, crop_disease)
+        return image, crop_disease
 
 def load_dataset(data_dir):
     images = []
-    crops = []
     crop_diseases = []
 
     p = Path(data_dir)
@@ -40,25 +37,26 @@ def load_dataset(data_dir):
         if file.is_file() and file.suffix in ['.jpg', '.jpeg', '.png']:
             img = Image.open(file).convert('RGB')
             images.append(img)
-            crops.append(file.parent.parent.name)
             crop_diseases.append(file.parent.name)
 
-    crop_classes = list(sorted(set(crops)))
     crop_disease_classes = list(sorted(set(crop_diseases)))
-
-    crop_classes_to_idx = {label:idx for idx, label in enumerate(crop_classes)}
     crop_disease_classes_to_idx = {label:idx for idx, label in enumerate(crop_disease_classes)}
 
-    crops = [crop_classes_to_idx[crop] for crop in crops]
+    # Create mapping from crop_disease to crop
+    disease_to_crop_mapping = {}
+    for crop_disease in crop_disease_classes:
+        # Assuming crop_disease starts with crop name, e.g., "Cashew healthy"
+        crop = crop_disease.split()[0] if ' ' in crop_disease else crop_disease
+        disease_to_crop_mapping[crop_disease] = crop
+
     crop_diseases = [crop_disease_classes_to_idx[crop_disease] for crop_disease in crop_diseases]
 
     df = pd.DataFrame({
         'image': images,
-        'crop': crops,
         'crop_disease': crop_diseases
     })
 
-    return df, crop_classes, crop_disease_classes
+    return df, crop_disease_classes, disease_to_crop_mapping
 
 def split_dataset(df, train_size=0.6, val_size=0.2, test_size=0.2):
     train_df, temp_df = train_test_split(df, train_size=train_size)

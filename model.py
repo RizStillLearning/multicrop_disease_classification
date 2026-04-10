@@ -4,26 +4,9 @@ import torch.nn as nn
 from utils import get_device
 from torchvision import models
 
-class SEBlock(nn.Module):
-    def __init__(self, channel, reduction=16):
-        super(SEBlock, self).__init__()
-        self.avg_pool = nn.AdaptiveAvgPool2d(1)
-        self.fc = nn.Sequential(
-            nn.Linear(channel, channel // reduction, bias=False),
-            nn.ReLU(inplace=True),
-            nn.Linear(channel // reduction, channel, bias=False),
-            nn.Sigmoid()
-        )
-
-    def forward(self, x):
-        b, c, _, _ = x.size()
-        y = self.avg_pool(x).view(b, c)
-        y = self.fc(y).view(b, c, 1, 1)
-        return x * y.expand_as(x)
-
-class DualHeadClassifier(nn.Module):
-    def __init__(self, model_name, pretrained=True, num_classes1=5, num_classes2=16):
-        super(DualHeadClassifier, self).__init__()
+class CropDiseaseClassifier(nn.Module):
+    def __init__(self, model_name, pretrained=True, num_classes=16):
+        super(CropDiseaseClassifier, self).__init__()
         models_dict = {
             'resnet50': models.resnet50,
             'vgg19': models.vgg19,
@@ -36,33 +19,24 @@ class DualHeadClassifier(nn.Module):
         self.base_model = models_dict[model_name](pretrained=pretrained)
         in_features = self.base_model.fc.in_features
         self.base_model.fc = nn.Identity()
-        self.se_block = SEBlock(in_features)
 
-        self.head1 = nn.Sequential(
-            nn.Linear(in_features, 256),
+        self.head = nn.Sequential(
+            nn.Linear(in_features, 512),
             nn.ReLU(),
             nn.Dropout(0.5),
-            nn.Linear(256, num_classes1)
-        )
-
-        self.head2 = nn.Sequential(
-            nn.Linear(in_features, 256),
+            nn.Linear(512, 256),
             nn.ReLU(),
             nn.Dropout(0.5),
-            nn.Linear(256, num_classes2)
+            nn.Linear(256, num_classes)
         )
 
     def forward(self, x):
         x = self.base_model(x)
-        x = self.se_block(x)
-        
-        out1 = self.head1(x)
-        out2 = self.head2(x)
-        
-        return out1, out2
+        x = self.head(x)
+        return x
     
-def build_model(model_name, num_classes1=5, num_classes2=16):
-    model = DualHeadClassifier(model_name=model_name, num_classes1=num_classes1, num_classes2=num_classes2)
+def build_model(model_name, num_classes=16):
+    model = CropDiseaseClassifier(model_name=model_name, num_classes=num_classes)
     return model
 
 def save_model(model_name, model, file_name='model.pth', **config):
@@ -75,6 +49,6 @@ def load_model(model_name, model, file_name='model.pth'):
     path = os.path.join(model_name, file_name)
     config = torch.load(path, map_location=get_device(), weights_only=True)
     model.load_state_dict(config['model_state_dict'])
-    crop_classes = config['crop_classes']
     crop_disease_classes = config['crop_disease_classes']
-    return crop_classes, crop_disease_classes
+    disease_to_crop_mapping = config['disease_to_crop_mapping']
+    return crop_disease_classes, disease_to_crop_mapping

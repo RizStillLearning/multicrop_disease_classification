@@ -22,16 +22,13 @@ def get_transform(mode: Literal['train', 'val', 'test']):
 
     transform_dict = {
         'train': transforms.Compose([
-            transforms.RandomResizedCrop(img_size),  # Random crop and resize
+            transforms.Resize((img_size, img_size)),
             transforms.RandomHorizontalFlip(p=0.5),
             transforms.RandomVerticalFlip(p=0.3),
-            transforms.RandomRotation(degrees=15),  # Random rotation
-            transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.1),  # Color augmentation
-            transforms.RandomAffine(degrees=0, translate=(0.1, 0.1)),  # Random translation
-            transforms.GaussianBlur(kernel_size=3, sigma=(0.1, 2.0)),  # Slight blur
+            transforms.RandomRotation(degrees=15),
+            transforms.GaussianBlur(kernel_size=3, sigma=(0.1, 2.0)),
             transforms.ToTensor(),
             transforms.Normalize(mean, std),
-            transforms.RandomErasing(p=0.1, scale=(0.02, 0.33), ratio=(0.3, 3.3)),  # Random erasing
         ]),
         'val': transforms.Compose([
             transforms.ToTensor(),
