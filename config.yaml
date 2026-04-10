@@ -1,6 +1,7 @@
 model_name: 'resnet50'
 checkpoint_name: 'checkpoint.pth'
 dataset_dir: './data/'
+num_classes: 16
 image_size: 224
 learning_rate: 0.001
 batch_size: 32
