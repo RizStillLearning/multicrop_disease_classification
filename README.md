@@ -23,7 +23,8 @@ python predict.py --image_path path_to_your_image.jpg
 
 ### Dataset Format
 The dataset should be organized in the following structure:
-```dataset/
+```
+data/
 ├── crop1/
 │   ├── crop1__disease1/
 │   └── crop1__disease2/
