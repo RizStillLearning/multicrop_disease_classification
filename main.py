@@ -16,7 +16,7 @@ def main():
     model_name = config['model_name']
 
     print("Loading dataset...")
-    df, crop_disease_classes, disease_to_crop_mapping = load_dataset(config['dataset_dir'])
+    df, crop_disease_classes = load_dataset(config['dataset_dir'])
 
     print("Splitting dataset into train, validation, and test data...")
     train_df, val_df, test_df = split_dataset(df)
@@ -79,7 +79,7 @@ def main():
     acc = evaluate_model(test_dataloader, best_model_state, device)
     print(f"Test accuracy: {acc:.4f}")
     
-    save_model(model_name, best_model_state, crop_disease_classes=crop_disease_classes, disease_to_crop_mapping=disease_to_crop_mapping)
+    save_model(model_name, best_model_state, crop_disease_classes=crop_disease_classes)
 
     y_true, y_pred = get_labels(test_dataloader, best_model_state, device)
     save_classification_report(model_name, y_true, y_pred, crop_disease_classes, 'crop_disease_classification_report.json')

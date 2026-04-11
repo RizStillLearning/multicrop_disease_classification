@@ -42,13 +42,6 @@ def load_dataset(data_dir):
     crop_disease_classes = list(sorted(set(crop_diseases)))
     crop_disease_classes_to_idx = {label:idx for idx, label in enumerate(crop_disease_classes)}
 
-    # Create mapping from crop_disease to crop
-    disease_to_crop_mapping = {}
-    for crop_disease in crop_disease_classes:
-        # Assuming crop_disease starts with crop name, e.g., "Cashew healthy"
-        crop = crop_disease.split()[0] if ' ' in crop_disease else crop_disease
-        disease_to_crop_mapping[crop_disease] = crop
-
     crop_diseases = [crop_disease_classes_to_idx[crop_disease] for crop_disease in crop_diseases]
 
     df = pd.DataFrame({
@@ -56,7 +49,7 @@ def load_dataset(data_dir):
         'crop_disease': crop_diseases
     })
 
-    return df, crop_disease_classes, disease_to_crop_mapping
+    return df, crop_disease_classes
 
 def split_dataset(df, train_size=0.6, val_size=0.2, test_size=0.2):
     train_df, temp_df = train_test_split(df, train_size=train_size)

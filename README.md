@@ -21,4 +21,14 @@ To perform inference with the trained model, use the following command:
 python predict.py --image_path path_to_your_image.jpg
 ```
 
+### Dataset Format
+The dataset should be organized in the following structure:
+```dataset/
+├── crop1/
+│   ├── crop1__disease1/
+│   └── crop1__disease2/
+├── crop2/
+│   ├── crop2__disease1/
+│   └── crop2__disease2/
+```
 Make sure to adjust the training parameters and dataset paths in the `config.yaml` file as needed.

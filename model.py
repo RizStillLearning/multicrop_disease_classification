@@ -50,5 +50,4 @@ def load_model(model_name, model, file_name='model.pth'):
     config = torch.load(path, map_location=get_device(), weights_only=True)
     model.load_state_dict(config['model_state_dict'])
     crop_disease_classes = config['crop_disease_classes']
-    disease_to_crop_mapping = config['disease_to_crop_mapping']
-    return crop_disease_classes, disease_to_crop_mapping
+    return crop_disease_classes

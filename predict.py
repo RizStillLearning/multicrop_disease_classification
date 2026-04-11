@@ -22,12 +22,13 @@ def predict(path_to_image: str):
     probs = torch.nn.functional.softmax(output, dim=1)
     conf, predicted_class = torch.max(probs, dim=1)
 
-    predicted_crop_disease = crop_disease_classes[predicted_class.item()]
-    predicted_crop = disease_to_crop_mapping[predicted_crop_disease]
+    predicted_class = crop_disease_classes[predicted_class.item()]
+    predicted_crop, predicted_crop_disease = predicted_class.split('__', 1)
 
-    return (predicted_crop, float("{:.4f}".format(conf.item()))), (predicted_crop_disease, float("{:.4f}".format(conf.item())))
+    return predicted_crop, predicted_crop_disease, conf.item()
 
 if __name__ == '__main__':
-    predicted_crop, predicted_crop_disease = predict('./images.jpeg')
+    predicted_crop, predicted_crop_disease, confidence = predict('./images.jpeg')
     print(predicted_crop)
     print(predicted_crop_disease)
+    print(f"Confidence: {confidence:.4f}")
