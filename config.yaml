@@ -1,4 +1,4 @@
-model_name: 'efficientnet_b0'
+model_name: 'convnext_large'
 checkpoint_name: 'checkpoint.pth'
 dataset_dir: './data/'
 num_classes: 16
