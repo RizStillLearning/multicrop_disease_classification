@@ -8,17 +8,26 @@ class CropDiseaseClassifier(nn.Module):
     def __init__(self, model_name, pretrained=True, num_classes=16):
         super(CropDiseaseClassifier, self).__init__()
         models_dict = {
-            'resnet50': models.resnet50,
-            'vgg19': models.vgg19,
-            'efficientnet_b0': models.efficientnet_b0,
+            'resnet50': models.resnet50(weights=models.ResNet50_Weights.IMAGENET1K_V1) if pretrained else models.resnet50(weights=None),
+            'vgg19': models.vgg19(weights=models.VGG19_Weights.IMAGENET1K_V1) if pretrained else models.vgg19(weights=None),
+            'convnext_large': models.convnext_large(weights=models.ConvNeXt_Large_Weights.IMAGENET1K_V1) if pretrained else models.convnext_large(weights=None),
+            'efficientnet_b0': models.efficientnet_b0(weights=models.EfficientNet_B0_Weights.IMAGENET1K_V1) if pretrained else models.efficientnet_b0(weights=None),
         }
 
         if model_name not in models_dict:
             raise ValueError(f"Unsupported model name: {model_name}. Supported models are: {list(models_dict.keys())}")
         
-        self.base_model = models_dict[model_name](pretrained=pretrained)
-        in_features = self.base_model.fc.in_features
-        self.base_model.fc = nn.Identity()
+        self.base_model = models_dict[model_name]
+        
+        for param in self.base_model.parameters():
+            param.requires_grad = False
+            
+        try:
+            in_features = self.base_model.fc.in_features
+            self.base_model.fc = nn.Identity()
+        except AttributeError:
+            in_features = self.base_model.classifier[-1].in_features
+            self.base_model.classifier[-1] = nn.Identity()
 
         self.head = nn.Sequential(
             nn.Linear(in_features, 512),

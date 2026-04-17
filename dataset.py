@@ -34,7 +34,7 @@ def load_dataset(data_dir):
 
     p = Path(data_dir)
     for file in p.rglob('*'):
-        if file.is_file() and file.suffix in ['.jpg', '.jpeg', '.png']:
+        if file.is_file():
             img = Image.open(file).convert('RGB')
             images.append(img)
             crop_diseases.append(file.parent.name)
