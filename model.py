@@ -29,18 +29,24 @@ class CropDiseaseClassifier(nn.Module):
             in_features = self.base_model.classifier[-1].in_features
             self.base_model.classifier[-1] = nn.Identity()
 
+        self.flatten_layer = nn.Flatten()
+        
         self.head = nn.Sequential(
-            nn.Linear(in_features, 512),
+            nn.Conv1d(1, 64, kernel_size=3, padding=1),  # 1D conv to process the feature sequence
             nn.ReLU(),
             nn.Dropout(0.5),
-            nn.Linear(512, 256),
+            nn.Conv1d(64, 32, kernel_size=3, padding=1),  # Another conv layer
             nn.ReLU(),
             nn.Dropout(0.5),
-            nn.Linear(256, num_classes)
+            nn.AdaptiveAvgPool1d(1),  # Global average pooling to reduce to 1
+            nn.Flatten(),  # Flatten to 1D
+            nn.Linear(32, num_classes)  # Final classification layer
         )
 
     def forward(self, x):
         x = self.base_model(x)
+        x = self.flatten_layer(x)  # Flatten to 1D vector
+        x = x.unsqueeze(1)  # Reshape to (batch, 1, features) for 1D conv
         x = self.head(x)
         return x
     

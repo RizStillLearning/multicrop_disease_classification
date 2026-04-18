@@ -1,4 +1,4 @@
-model_name: 'convnext_large'
+model_name: 'resnet50'
 checkpoint_name: 'checkpoint.pth'
 dataset_dir: './data/'
 num_classes: 16
