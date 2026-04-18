@@ -18,7 +18,7 @@ python main.py
 ## Inference
 To perform inference with the trained model, use the following command:
 ```bash
-python predict.py --image_path path_to_your_image.jpg
+python predict.py
 ```
 
 ### Dataset Format
