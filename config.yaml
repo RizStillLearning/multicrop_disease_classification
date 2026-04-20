@@ -1,8 +1,9 @@
-model_name: 'convnext_large'
+model_name: 'efficientnet_b0'
 checkpoint_name: 'checkpoint.pth'
 dataset_dir: './data/'
 num_classes: 16
 image_size: 224
 learning_rate: 0.001
 batch_size: 32
-num_epoch: 30
+warmup_epochs: 5
+num_epoch: 50

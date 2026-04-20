@@ -4,11 +4,10 @@ import gc
 import copy
 import numpy as np
 import torch.optim as optim
-import pandas as pd
 from sklearn.utils.class_weight import compute_class_weight
 from dataset import load_dataset, split_dataset, build_dataloader
 from utils import get_config, get_device, load_checkpoint, save_checkpoint
-from model import build_model, save_model
+from model import build_model, save_model, get_cbam_resnet50
 from train import train_model, validate_model, evaluate_model, write_training_log, get_labels, save_classification_report
 
 def main():
@@ -31,13 +30,13 @@ def main():
     checkpoint_name = config['checkpoint_name']
     checkpoint_path = os.path.join(model_name, checkpoint_name)
 
-    model = build_model(model_name, num_crop_disease_classes)
+    model = build_model(model_name, num_classes=num_crop_disease_classes)
     device = get_device()
     model.to(device)
 
     cur_epoch = 1
     best_val_loss = float('inf')
-    best_model_state = build_model(model_name, num_crop_disease_classes)
+    best_model_state = build_model(model_name, num_classes=num_crop_disease_classes)
     best_model_state.to(device)
 
     crop_disease_labels = train_df['crop_disease'].values
