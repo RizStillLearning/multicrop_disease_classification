@@ -1,6 +1,6 @@
 # Multicrop Disease Classification
 
-This repository contains code for training a multicrop disease classification model using PyTorch. The model is designed to classify diseases based on images, and it utilizes a multicrop approach to improve performance.
+This repository contains code for training a multicrop disease classification model using EfficientNet_B0 with CBAM. The model is designed to classify diseases based on images, and it utilizes a multicrop approach to improve performance.
 
 ## Installation
 To install the required dependencies, run the following command:
@@ -12,7 +12,7 @@ pip install -r requirements.txt
 ## Usage
 To train the model, use the following command:
 ```bash
-python main.py
+python train.py
 ```
 
 ## Inference
