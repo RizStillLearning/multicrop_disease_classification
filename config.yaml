@@ -1,8 +1,8 @@
-model_name: 'resnet50'
+model_name: 'vgg19'
 checkpoint_name: 'checkpoint.pth'
 dataset_dir: './data/'
 num_classes: 16
 image_size: 224
 learning_rate: 0.001
 batch_size: 32
-num_epoch: 30
+num_epoch: 50

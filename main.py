@@ -30,13 +30,13 @@ def main():
     checkpoint_name = config['checkpoint_name']
     checkpoint_path = os.path.join(model_name, checkpoint_name)
 
-    model = get_cbam_resnet50(num_classes=num_crop_disease_classes)
+    model = build_model(model_name, num_classes=num_crop_disease_classes)
     device = get_device()
     model.to(device)
 
     cur_epoch = 1
     best_val_loss = float('inf')
-    best_model_state = build_model(model_name, num_crop_disease_classes)
+    best_model_state = build_model(model_name, num_classes=num_crop_disease_classes)
     best_model_state.to(device)
 
     crop_disease_labels = train_df['crop_disease'].values

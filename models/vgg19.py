@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 from torchvision import models
 from .cbam import CBAM
-
+from torchvision.models.vgg import VGG, make_layers
 
 class VGG19CBAM(nn.Module):
     """VGG19 with CBAM attention modules inserted after each convolutional block."""
