@@ -1,6 +1,14 @@
+model_dir: './models/'
 model_name: 'efficientnet_b0'
+checkpoint_dir: './checkpoints/'
 checkpoint_name: 'checkpoint.pth'
+final_model_dir: './final_model/'
+final_model_name: 'final_model.pth'
 dataset_dir: './data/'
+training_log_dir: './logs/'
+training_log_name: 'training_log.csv'
+classification_report_dir: './classification_reports/'
+classification_report_name: 'classification_report.json'
 num_classes: 16
 image_size: 224
 learning_rate: 0.001

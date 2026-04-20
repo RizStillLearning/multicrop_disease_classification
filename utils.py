@@ -47,20 +47,20 @@ def get_transform(mode: Literal['train', 'val', 'test']):
 def get_target_transform():
     return transforms.Lambda(lambda x: torch.tensor(x, dtype=torch.long))
 
-def save_checkpoint(model_name, checkpoint_name, model, optimizer, cur_epoch, best_val_loss):
-    os.makedirs(model_name, exist_ok=True)
-    checkpoint_path = os.path.join(model_name, checkpoint_name)
+def save_checkpoint(checkpoint_dir, checkpoint_name, model_state, optimizer_state, cur_epoch, best_val_loss):
+    os.makedirs(checkpoint_dir, exist_ok=True)
+    checkpoint_path = os.path.join(checkpoint_dir, checkpoint_name)
     torch.save({
-        'model_state_dict': model.state_dict(),
-        'optimizer_state_dict': optimizer.state_dict(),
+        'model_state_dict': model_state.state_dict(),
+        'optimizer_state_dict': optimizer_state.state_dict(),
         'cur_epoch': cur_epoch,
         'best_val_loss': best_val_loss,
     }, checkpoint_path)
 
 def load_checkpoint(checkpoint_path, model, best_model_state, optimizer):
-    checkpoint = torch.load(checkpoint_path, map_location=get_device(), weights_only=True)
-    best_model_state.load_state_dict(checkpoint['model_state_dict'])
+    checkpoint = torch.load(checkpoint_path, map_location=get_device())
     model.load_state_dict(checkpoint['model_state_dict'])
+    best_model_state.load_state_dict(checkpoint['model_state_dict'])
     optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
     cur_epoch = checkpoint['cur_epoch']
     best_val_loss = checkpoint['best_val_loss']

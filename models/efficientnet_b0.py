@@ -1,9 +1,7 @@
 import torch.nn as nn
-from torchvision.models import efficientnet_b0
+from torchvision.models import EfficientNet_B0_Weights, efficientnet_b0
 from torchvision.ops.misc import SqueezeExcitation
 from .cbam import CBAM
-
-model = efficientnet_b0(pretrained=True)
 
 # Example of a dynamic swap function
 def replace_se_with_cbam(model):
@@ -18,7 +16,7 @@ def replace_se_with_cbam(model):
             replace_se_with_cbam(module)
 
 def get_cbam_efficientnet_b0(num_classes=16, pretrained=True):
-    model = efficientnet_b0(weights='IMAGENET1K_V1' if pretrained else None)
+    model = efficientnet_b0(weights=EfficientNet_B0_Weights.IMAGENET1K_V1 if pretrained else None)
     replace_se_with_cbam(model)
 
     # Replace the final classifier layer to match the number of classes

@@ -1,12 +1,15 @@
 import torch
+import os
 from PIL import Image
 from model import build_model, load_model
 from utils import get_transform, get_config
 
 config = get_config()
 model_name = config['model_name']
-model = build_model(model_name)
-crop_disease_classes = load_model(model_name, model)
+model = build_model(num_classes=config['num_classes'])
+final_model_path = os.path.join(config['final_model_dir'], config['final_model_name'])
+crop_disease_classes = load_model(final_model_path, model)
+model.eval()
 
 def predict(path_to_image: str):
     img = Image.open(path_to_image).convert('RGB')
