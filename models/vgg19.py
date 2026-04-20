@@ -16,23 +16,28 @@ class VGG19CBAM(nn.Module):
         else:
             vgg = models.vgg19(weights=None)
 
-        self.features = self._make_cbam_features(vgg.features) if self.use_cbam else vgg.features
+        self.features = self._make_cbam_features(vgg) if self.use_cbam else vgg.features
         self.avgpool = vgg.avgpool
 
         classifier = list(vgg.classifier.children())
         classifier[-1] = nn.Linear(in_features=classifier[-1].in_features, out_features=num_classes)
         self.classifier = nn.Sequential(*classifier)
 
-    def _make_cbam_features(self, features):
-        block_ends = {4: 64, 9: 128, 18: 256, 27: 512, 36: 512}
-        layers = []
+    def _make_cbam_features(self, model):
+        new_features = []
+        last_channels = 3  # Initial input channels for the first conv layer
 
-        for idx, module in enumerate(features):
-            layers.append(module)
-            if idx in block_ends:
-                layers.append(CBAM(channel_in=block_ends[idx]))
+        for layer in model.features:
+            new_features.append(layer)
 
-        return nn.Sequential(*layers)
+            if isinstance(layer, nn.Conv2d):
+                last_channels = layer.out_channels
+            elif isinstance(layer, nn.MaxPool2d):
+                if self.use_cbam:
+                    new_features.append(CBAM(channel_in=last_channels))
+
+        model.features = nn.Sequential(*new_features)
+        return model.features
 
     def forward(self, x):
         x = self.features(x)
