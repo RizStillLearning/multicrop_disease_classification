@@ -51,9 +51,9 @@ def load_dataset(data_dir):
 
     return df, crop_disease_classes
 
-def split_dataset(df, train_size=0.6, val_size=0.2, test_size=0.2):
-    train_df, temp_df = train_test_split(df, train_size=train_size)
-    val_df, test_df = train_test_split(temp_df, train_size=val_size/(1 - train_size))
+def split_dataset(df, train_size=0.7, val_size=0.15, test_size=0.15):
+    train_df, temp_df = train_test_split(df, train_size=train_size, stratify=df['crop_disease'])
+    val_df, test_df = train_test_split(temp_df, train_size=val_size/(1 - train_size), stratify=temp_df['crop_disease'])
     return train_df, val_df, test_df
 
 def build_dataloader(df, mode: Literal['train', 'val', 'test']):

@@ -3,13 +3,14 @@ import os
 import joblib
 from dataset import load_dataset, build_dataloader
 from model import build_model, load_model, extract_features
-from utils import get_config, get_device
+from utils import get_config, get_device, seed_everything
 from train_backbone import save_classification_report
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVC
 from sklearn.metrics import classification_report, accuracy_score
 
+seed_everything()  # Set random seed for reproducibility
 device = get_device()
 config = get_config()
 

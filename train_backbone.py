@@ -6,11 +6,12 @@ import numpy as np
 import torch.optim as optim
 from sklearn.utils.class_weight import compute_class_weight
 from dataset import load_dataset, split_dataset, build_dataloader
-from utils import get_config, get_device, load_checkpoint, save_checkpoint
+from utils import get_config, get_device, load_checkpoint, save_checkpoint, seed_everything
 from model import build_model, save_model
 from train import train_model, validate_model, evaluate_model, get_labels, save_classification_report, write_training_log
 
 def main():
+    seed_everything()  # Set random seed for reproducibility
     config = get_config()
 
     print("Loading dataset...")
