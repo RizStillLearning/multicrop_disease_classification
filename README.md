@@ -10,9 +10,16 @@ pip install -r requirements.txt
 ```
 
 ## Usage
-To train the model, use the following command:
+Backbone has to be trained first before training the classifier
+
+To train the backbone (feature extractor), use the following command:
 ```bash
-python train.py
+python train_backbone.py
+```
+
+To train the classifier, use the following command:
+```bash
+python train_SVM.py
 ```
 
 ## Inference
