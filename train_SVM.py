@@ -42,7 +42,7 @@ train_features = scaler.fit_transform(train_features)
 test_features = scaler.transform(test_features)
 
 print("Training SVM model...")
-svm_model = SVC(kernel='rbf', random_state=42)
+svm_model = SVC(kernel='rbf', probability=True, random_state=42)
 svm_model.fit(train_features, train_labels)
 
 print("Evaluating SVM model on test data...")

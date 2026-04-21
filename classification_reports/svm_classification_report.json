@@ -6,9 +6,9 @@
         "support": 113.0
     },
     "Cashew__Leaf_miner": {
-        "precision": 0.990990990990991,
+        "precision": 1.0,
         "recall": 0.990990990990991,
-        "f1-score": 0.990990990990991,
+        "f1-score": 0.995475113122172,
         "support": 111.0
     },
     "Cashew__Red_rust": {
@@ -25,14 +25,14 @@
     },
     "Corn__Maize_leaf_blight": {
         "precision": 1.0,
-        "recall": 0.9595959595959596,
-        "f1-score": 0.979381443298969,
+        "recall": 0.9494949494949495,
+        "f1-score": 0.9740932642487047,
         "support": 99.0
     },
     "Corn__Maize_streak_virus": {
-        "precision": 0.9876543209876543,
+        "precision": 0.963855421686747,
         "recall": 1.0,
-        "f1-score": 0.9937888198757764,
+        "f1-score": 0.9815950920245399,
         "support": 80.0
     },
     "Potato__Fungi": {
@@ -72,9 +72,9 @@
         "support": 93.0
     },
     "Rice__Leaf_blast": {
-        "precision": 0.9175257731958762,
-        "recall": 0.978021978021978,
-        "f1-score": 0.9468085106382979,
+        "precision": 0.9072164948453608,
+        "recall": 0.967032967032967,
+        "f1-score": 0.9361702127659575,
         "support": 91.0
     },
     "Tomato__Healthy": {
@@ -95,17 +95,17 @@
         "f1-score": 0.9034749034749034,
         "support": 135.0
     },
-    "accuracy": 0.9737644905430141,
+    "accuracy": 0.9725442342892008,
     "macro avg": {
-        "precision": 0.977574876080034,
-        "recall": 0.9773086823709627,
-        "f1-score": 0.9771322771263931,
+        "precision": 0.976006178039883,
+        "recall": 0.9759905560528365,
+        "f1-score": 0.9756550219612268,
         "support": 1639.0
     },
     "weighted avg": {
-        "precision": 0.9744353129978722,
-        "recall": 0.9737644905430141,
-        "f1-score": 0.9737357686130911,
+        "precision": 0.9733114226537787,
+        "recall": 0.9725442342892008,
+        "f1-score": 0.9725341972257225,
         "support": 1639.0
     }
 }
