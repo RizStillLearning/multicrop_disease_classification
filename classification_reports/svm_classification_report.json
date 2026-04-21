@@ -1,14 +1,14 @@
 {
     "Cashew__Healthy": {
-        "precision": 0.9912280701754386,
+        "precision": 1.0,
         "recall": 1.0,
-        "f1-score": 0.9955947136563876,
+        "f1-score": 1.0,
         "support": 113.0
     },
     "Cashew__Leaf_miner": {
         "precision": 1.0,
-        "recall": 0.990990990990991,
-        "f1-score": 0.995475113122172,
+        "recall": 1.0,
+        "f1-score": 1.0,
         "support": 111.0
     },
     "Cashew__Red_rust": {
@@ -25,32 +25,32 @@
     },
     "Corn__Maize_leaf_blight": {
         "precision": 1.0,
-        "recall": 0.9494949494949495,
-        "f1-score": 0.9740932642487047,
+        "recall": 0.9797979797979798,
+        "f1-score": 0.9897959183673469,
         "support": 99.0
     },
     "Corn__Maize_streak_virus": {
-        "precision": 0.963855421686747,
+        "precision": 0.975609756097561,
         "recall": 1.0,
-        "f1-score": 0.9815950920245399,
+        "f1-score": 0.9876543209876543,
         "support": 80.0
     },
     "Potato__Fungi": {
-        "precision": 0.9871794871794872,
-        "recall": 0.9871794871794872,
-        "f1-score": 0.9871794871794872,
+        "precision": 1.0,
+        "recall": 0.9743589743589743,
+        "f1-score": 0.987012987012987,
         "support": 78.0
     },
     "Potato__Healthy": {
-        "precision": 0.9876543209876543,
-        "recall": 1.0,
-        "f1-score": 0.9937888198757764,
-        "support": 80.0
-    },
-    "Potato__Nematode": {
         "precision": 1.0,
         "recall": 1.0,
         "f1-score": 1.0,
+        "support": 80.0
+    },
+    "Potato__Nematode": {
+        "precision": 0.9844961240310077,
+        "recall": 1.0,
+        "f1-score": 0.9921875,
         "support": 127.0
     },
     "Rice__Bacterial_leaf_blight": {
@@ -60,52 +60,52 @@
         "support": 80.0
     },
     "Rice__Brown_spot": {
-        "precision": 0.96875,
-        "recall": 0.9207920792079208,
-        "f1-score": 0.9441624365482234,
+        "precision": 0.9693877551020408,
+        "recall": 0.9405940594059405,
+        "f1-score": 0.9547738693467337,
         "support": 101.0
     },
     "Rice__Healthy": {
+        "precision": 1.0,
+        "recall": 0.989247311827957,
+        "f1-score": 0.9945945945945946,
+        "support": 93.0
+    },
+    "Rice__Leaf_blast": {
+        "precision": 0.9368421052631579,
+        "recall": 0.978021978021978,
+        "f1-score": 0.956989247311828,
+        "support": 91.0
+    },
+    "Tomato__Healthy": {
         "precision": 1.0,
         "recall": 1.0,
         "f1-score": 1.0,
         "support": 93.0
     },
-    "Rice__Leaf_blast": {
-        "precision": 0.9072164948453608,
-        "recall": 0.967032967032967,
-        "f1-score": 0.9361702127659575,
-        "support": 91.0
-    },
-    "Tomato__Healthy": {
-        "precision": 0.989247311827957,
-        "recall": 0.989247311827957,
-        "f1-score": 0.989247311827957,
-        "support": 93.0
-    },
     "Tomato__Septoria_leaf_spot": {
-        "precision": 0.8774193548387097,
-        "recall": 0.9444444444444444,
-        "f1-score": 0.9096989966555183,
+        "precision": 0.9716312056737588,
+        "recall": 0.9513888888888888,
+        "f1-score": 0.9614035087719298,
         "support": 144.0
     },
     "Tomato__Verticulium_wilt": {
-        "precision": 0.9435483870967742,
-        "recall": 0.8666666666666667,
-        "f1-score": 0.9034749034749034,
+        "precision": 0.9492753623188406,
+        "recall": 0.9703703703703703,
+        "f1-score": 0.9597069597069597,
         "support": 135.0
     },
-    "accuracy": 0.9725442342892008,
+    "accuracy": 0.9853569249542404,
     "macro avg": {
-        "precision": 0.976006178039883,
-        "recall": 0.9759905560528365,
-        "f1-score": 0.9756550219612268,
+        "precision": 0.9867026442803979,
+        "recall": 0.9864862226670055,
+        "f1-score": 0.9865074316312521,
         "support": 1639.0
     },
     "weighted avg": {
-        "precision": 0.9733114226537787,
-        "recall": 0.9725442342892008,
-        "f1-score": 0.9725341972257225,
+        "precision": 0.9855446312471391,
+        "recall": 0.9853569249542404,
+        "f1-score": 0.985366071699014,
         "support": 1639.0
     }
 }

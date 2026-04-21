@@ -1,12 +1,10 @@
-import torch
 import torch.nn as nn
 import os
 import joblib
-from PIL import Image
-from dataset import load_dataset, split_dataset, build_dataloader
+from dataset import load_dataset, build_dataloader
 from model import build_model, load_model, extract_features
-from utils import get_transform, get_config, get_device
-from train import save_classification_report
+from utils import get_config, get_device
+from train_backbone import save_classification_report
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVC
@@ -15,11 +13,10 @@ from sklearn.metrics import classification_report, accuracy_score
 device = get_device()
 config = get_config()
 
-model_name = config['model_name']
 model = build_model(num_classes=config['num_classes'])
 model.to(device)
-final_model_path = os.path.join(config['final_model_dir'], config['final_model_name'])
-crop_disease_classes = load_model(final_model_path, model)
+backbone_path = os.path.join(config['backbone_dir'], config['backbone_name'])
+crop_disease_classes = load_model(backbone_path, model)
 model.classifier[1] = nn.Identity() 
 model.eval()
 
@@ -56,7 +53,7 @@ print(classification_report(test_labels, test_predictions, target_names=crop_dis
 
 save_classification_report(test_labels, test_predictions, crop_disease_classes, config['classification_report_dir'], 'svm_classification_report.json')
 
-svm_model_path = os.path.join(config['final_model_dir'], 'svm_model.joblib')
-os.makedirs(config['final_model_dir'], exist_ok=True)
+svm_model_path = os.path.join(config['classifier_dir'], config['classifier_name'])
+os.makedirs(config['classifier_dir'], exist_ok=True)
 joblib.dump(svm_model, svm_model_path)
 print(f"SVM model saved to {svm_model_path}")

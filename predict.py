@@ -6,10 +6,9 @@ from model import build_model, load_model
 from utils import get_transform, get_config
 
 config = get_config()
-model_name = config['model_name']
 model = build_model(num_classes=config['num_classes'])
-final_model_path = os.path.join(config['final_model_dir'], config['final_model_name'])
-crop_disease_classes = load_model(final_model_path, model)
+backbone_path = os.path.join(config['backbone_dir'], config['backbone_name'])
+crop_disease_classes = load_model(backbone_path, model)
 model.classifier[1] = nn.Identity()
 model.eval()
 
@@ -20,7 +19,7 @@ def predict(path_to_image: str):
     feature = model(img).detach().numpy()
 
     # Load the trained SVM model
-    svm_model_path = os.path.join(config['final_model_dir'], 'svm_model.joblib')
+    svm_model_path = os.path.join(config['classifier_dir'], config['classifier_name'])
     svm_model = joblib.load(svm_model_path)
 
     # Predict the class and confidence
