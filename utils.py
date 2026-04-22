@@ -1,6 +1,7 @@
 import yaml
 import torch
 import os
+import pandas as pd
 from typing import Literal
 from torchvision import transforms
 
@@ -64,6 +65,11 @@ def save_checkpoint(checkpoint_dir, checkpoint_name, model_state, optimizer_stat
         'best_val_loss': best_val_loss,
     }, checkpoint_path)
 
+def save_current_fold(training_log_dir, fold_results, fold_name='fold_results.csv'):
+    os.makedirs(training_log_dir, exist_ok=True)
+    fold_path = os.path.join(training_log_dir, fold_name)
+    fold_results.to_csv(fold_path, index=False)
+
 def load_checkpoint(checkpoint_path, model, best_model_state, optimizer):
     checkpoint = torch.load(checkpoint_path, map_location=get_device())
     model.load_state_dict(checkpoint['model_state_dict'])
@@ -72,3 +78,8 @@ def load_checkpoint(checkpoint_path, model, best_model_state, optimizer):
     cur_epoch = checkpoint['cur_epoch']
     best_val_loss = checkpoint['best_val_loss']
     return cur_epoch, best_val_loss
+
+def load_current_fold(training_log_dir, fold_name='fold_results.csv'):
+    fold_path = os.path.join(training_log_dir, fold_name)
+    df = pd.read_csv(fold_path)
+    return df
