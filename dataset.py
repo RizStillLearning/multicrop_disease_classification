@@ -5,7 +5,6 @@ from PIL import Image
 from utils import get_transform, get_config, get_target_transform
 from torch.utils.data import Dataset, DataLoader
 from typing import Literal
-from sklearn.model_selection import train_test_split
 
 class CropDiseaseDataset(Dataset):
     def __init__(self, df, transform=None, target_transform=None):

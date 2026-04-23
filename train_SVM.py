@@ -2,9 +2,10 @@ import torch.nn as nn
 import numpy as np
 import os
 import joblib
+import pandas as pd
 from dataset import load_dataset, build_dataloader
 from model import build_model, load_model, extract_features
-from utils import get_config, get_device, seed_everything
+from utils import get_config, get_device, save_current_fold, seed_everything
 from train_backbone import save_classification_report
 from sklearn.model_selection import train_test_split, StratifiedKFold, cross_val_score
 from sklearn.preprocessing import StandardScaler
@@ -29,6 +30,14 @@ def main():
     
     skf = StratifiedKFold(n_splits=config['k_fold'], shuffle=True, random_state=42)
     y_numpy = np.array(train_val_df['crop_disease'].values)
+
+    training_log_dir = config['training_log_dir']
+    fold_results_name = config['svm_fold_results_name']
+    fold_results_path = os.path.join(training_log_dir, fold_results_name)
+    fold_results = pd.DataFrame({
+        'fold': pd.Series(dtype='int8'),
+        'val_accuracy': pd.Series(dtype='float')
+    })
 
     for fold, (train_idx, val_idx) in enumerate(skf.split(np.zeros(len(y_numpy)), y_numpy)):
         print(f"Processing fold {fold + 1}/{config['k_fold']}...")
@@ -57,6 +66,9 @@ def main():
         val_predictions = svm_model.predict(val_features)
         val_accuracy = accuracy_score(val_labels, val_predictions)
         print(f"Validation Accuracy: {val_accuracy:.4f}")
+
+        fold_results.loc[fold] = [fold + 1, f"{val_accuracy:.4f}"]
+        save_current_fold(training_log_dir, fold_results, fold_name=fold_results_name)
 
     print("Evaluating final SVM model on test data...")
     test_dataloader = build_dataloader(test_df, mode='test')

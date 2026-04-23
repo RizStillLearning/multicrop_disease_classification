@@ -8,7 +8,8 @@ classifier_name: 'classifier.joblib'
 dataset_dir: './data/'
 training_log_dir: './logs/'
 training_log_name: 'training_log.csv'
-fold_results_name: 'fold_results.csv'
+backbone_fold_results_name: 'backbone_fold_results.csv'
+svm_fold_results_name: 'svm_fold_results.csv'
 classification_report_dir: './classification_reports/'
 num_classes: 16
 image_size: 224

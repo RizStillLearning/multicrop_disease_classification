@@ -38,7 +38,7 @@ def main():
 
     # Load current fold to resume training
     training_log_dir = config['training_log_dir']
-    fold_results_name = config['fold_results_name']
+    fold_results_name = config['backbone_fold_results_name']
     fold_results_path = os.path.join(training_log_dir, fold_results_name)
 
     if os.path.exists(fold_results_path):
