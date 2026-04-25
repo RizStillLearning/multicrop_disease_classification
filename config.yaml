@@ -11,6 +11,8 @@ training_log_name: 'training_log.csv'
 backbone_fold_results_name: 'backbone_fold_results.csv'
 svm_fold_results_name: 'svm_fold_results.csv'
 classification_report_dir: './classification_reports/'
+backbone_classification_report_name: 'backbone_classification_report.json'
+svm_classification_report_name: 'svm_classification_report.json'
 num_classes: 16
 image_size: 224
 learning_rate: 0.001

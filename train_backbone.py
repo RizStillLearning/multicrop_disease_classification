@@ -127,7 +127,8 @@ def main():
 
     y_true, y_pred = get_labels(test_dataloader, best_model_state, device)
     classification_report_dir = config['classification_report_dir']
-    save_classification_report(y_true, y_pred, crop_disease_classes, classification_report_dir, 'backbone_classification_report.json')
+    classification_report_name = config['backbone_classification_report_name']
+    save_classification_report(y_true, y_pred, crop_disease_classes, classification_report_dir, classification_report_name)
 
     del model
 

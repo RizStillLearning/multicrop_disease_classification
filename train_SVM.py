@@ -82,7 +82,7 @@ def main():
     report = classification_report(test_labels, test_predictions, target_names=crop_disease_classes)
     print(report)
 
-    save_classification_report(test_labels, test_predictions, crop_disease_classes, config['classification_report_dir'], 'svm_classification_report.json')
+    save_classification_report(test_labels, test_predictions, crop_disease_classes, config['classification_report_dir'], config['svm_classification_report_name'])
 
     svm_model_path = os.path.join(config['classifier_dir'], config['classifier_name'])
     os.makedirs(config['classifier_dir'], exist_ok=True)
