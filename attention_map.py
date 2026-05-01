@@ -42,7 +42,7 @@ target_layers = [model.features[-1]]
 cam_generator = GradCAM(model=model, target_layers=target_layers)
 
 # 5. Plotting Grid
-fig, axes = plt.subplots(5, 3, figsize=(40, 30))
+fig, axes = plt.subplots(3, 5, figsize=(20, 12))
 
 for idx, sample_img_path in enumerate(sample_img_paths):
     true_label = sample_img_path.parent.name
@@ -62,21 +62,19 @@ for idx, sample_img_path in enumerate(sample_img_paths):
     overlayed_img = show_cam_on_image(img_np, grayscale_cam, use_rgb=True)
 
     # Original Image
-    axes[idx, 0].imshow(img_np)
-    axes[idx, 0].set_title(f'Original Image\nTrue Class: {true_label}')
-    axes[idx, 0].axis('off')
+    axes[0, idx].imshow(img_np)
+    axes[0, idx].set_title(f'Original Image\nTrue Class: {true_label}')
+    axes[0, idx].axis('off')
 
     # Raw Attention Map
-    axes[idx, 1].imshow(grayscale_cam, cmap='jet')
-    axes[idx, 1].set_title('Attention Map (Grad-CAM)')
-    axes[idx, 1].axis('off')
+    axes[1, idx].imshow(grayscale_cam, cmap='jet')
+    axes[1, idx].set_title('Attention Map (Grad-CAM)')
+    axes[1, idx].axis('off')
 
     # Overlayed Image
-    axes[idx, 2].imshow(overlayed_img)
-    axes[idx, 2].set_title('Overlayed Heatmap')
-    axes[idx, 2].axis('off')
-
-plt.tight_layout(h_pad=10.0)
+    axes[2, idx].imshow(overlayed_img)
+    axes[2, idx].set_title('Overlayed Heatmap')
+    axes[2, idx].axis('off')
 
 plot_dir = Path(config['plot_dir'])
 plot_dir.mkdir(parents=True, exist_ok=True)
