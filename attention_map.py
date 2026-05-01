@@ -77,4 +77,9 @@ for idx, sample_img_path in enumerate(sample_img_paths):
     axes[idx, 2].axis('off')
 
 plt.tight_layout(h_pad=10.0)
+
+plot_dir = Path(config['plot_dir'])
+plot_dir.mkdir(parents=True, exist_ok=True)
+plt.savefig(plot_dir / 'attention_maps.png')
+
 plt.show()
