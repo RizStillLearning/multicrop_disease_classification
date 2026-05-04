@@ -32,7 +32,8 @@ model.eval()
 # 3. Get 5 random sample images
 data_dir = Path(config['dataset_dir'])
 all_images = list(data_dir.rglob('*.jpg')) + list(data_dir.rglob('*.png')) + list(data_dir.rglob('*.jpeg'))
-sample_img_paths = random.sample(all_images, 5)
+unhealthy_images = [img for img in all_images if 'Healthy' not in img.parent.name]
+sample_img_paths = random.sample(unhealthy_images, 5)
 
 # 4. Setup Grad-CAM from the library
 # The target layer is the last convolutional block in EfficientNet
@@ -42,7 +43,7 @@ target_layers = [model.features[-1]]
 cam_generator = GradCAM(model=model, target_layers=target_layers)
 
 # 5. Plotting Grid
-fig, axes = plt.subplots(3, 5, figsize=(20, 12))
+fig, axes = plt.subplots(3, 5, figsize=(20, 15))
 
 for idx, sample_img_path in enumerate(sample_img_paths):
     true_label = sample_img_path.parent.name
@@ -63,7 +64,7 @@ for idx, sample_img_path in enumerate(sample_img_paths):
 
     # Original Image
     axes[0, idx].imshow(img_np)
-    axes[0, idx].set_title(f'Original Image\nTrue Class: {true_label}')
+    axes[0, idx].set_title(true_label)
     axes[0, idx].axis('off')
 
     # Raw Attention Map
