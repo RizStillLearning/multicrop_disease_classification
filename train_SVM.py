@@ -3,6 +3,7 @@ import numpy as np
 import os
 import joblib
 import pandas as pd
+import matplotlib.pyplot as plt
 from dataset import load_dataset, build_dataloader
 from model import build_model, load_model, extract_features
 from utils import get_config, get_device, save_current_fold, seed_everything
@@ -11,6 +12,8 @@ from sklearn.model_selection import train_test_split, StratifiedKFold, cross_val
 from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVC
 from sklearn.metrics import classification_report, accuracy_score
+from sklearn.decomposition import PCA
+from sklearn.inspection import DecisionBoundaryDisplay
 
 def main():
     seed_everything()  # Set random seed for reproducibility
@@ -25,7 +28,7 @@ def main():
     model.eval()
 
     print("Loading dataset...")
-    df, _ = load_dataset(config['dataset_dir'])
+    df, crop_disease_classes = load_dataset(config['dataset_dir'])
     train_val_df, test_df = train_test_split(df, test_size=0.2, random_state=42, stratify=df['crop_disease'])
     
     skf = StratifiedKFold(n_splits=config['k_fold'], shuffle=True, random_state=42)
@@ -77,6 +80,44 @@ def main():
     test_predictions = svm_model.predict(test_features)
     test_accuracy = accuracy_score(test_labels, test_predictions)
     print(f"Test Accuracy: {test_accuracy:.4f}")
+
+    plot_dir = config['plot_dir']
+    plot_name = 'svm_decision_boundary.png'
+    plot_path = os.path.join(plot_dir, plot_name)
+    os.makedirs(plot_dir, exist_ok=True)
+    
+    print("Generating 2D decision boundary visualization...")
+    # Reduce dimensions to 2D using PCA for visualization
+    pca = PCA(n_components=2)
+    train_features_2d = pca.fit_transform(train_features)
+    test_features_2d = pca.transform(test_features)
+    
+    # Train a new SVM on the 2D features specifically for plotting
+    svm_model_2d = SVC(kernel='rbf', probability=True, random_state=42)
+    svm_model_2d.fit(train_features_2d, train_labels)
+
+    fig, ax = plt.subplots(figsize=(10, 10))
+    DecisionBoundaryDisplay.from_estimator(
+        svm_model_2d,
+        test_features_2d,
+        response_method="predict",
+        cmap='tab10',
+        alpha=0.3,
+        ax=ax,
+        xlabel='PCA Component 1',
+        ylabel='PCA Component 2'
+    )
+    scatter = ax.scatter(test_features_2d[:, 0], test_features_2d[:, 1], c=test_labels, cmap='tab10', edgecolors='k', alpha=0.8)
+    
+    # Add the colorbar to the plot
+    cbar = plt.colorbar(scatter, ax=ax)
+    cbar.set_ticks(np.arange(len(crop_disease_classes)))
+    cbar.set_ticklabels(crop_disease_classes)
+    cbar.set_label('Crop Diseases')
+
+    ax.set_title('SVM Decision Boundary (PCA Reduced 2D)')
+    plt.savefig(plot_path, bbox_inches='tight')
+    plt.close()
 
     print("Classification Report on Test Data:")
     report = classification_report(test_labels, test_predictions, target_names=crop_disease_classes)
