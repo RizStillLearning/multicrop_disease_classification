@@ -4,16 +4,15 @@ import os
 import joblib
 import pandas as pd
 import matplotlib.pyplot as plt
+import seaborn as sns
 from dataset import load_dataset, build_dataloader
 from model import build_model, load_model, extract_features
 from utils import get_config, get_device, save_current_fold, seed_everything
 from train_backbone import save_classification_report
-from sklearn.model_selection import train_test_split, StratifiedKFold, cross_val_score
+from sklearn.model_selection import train_test_split, StratifiedKFold
 from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVC
-from sklearn.metrics import classification_report, accuracy_score
-from sklearn.decomposition import PCA
-from sklearn.inspection import DecisionBoundaryDisplay
+from sklearn.metrics import classification_report, accuracy_score, confusion_matrix
 
 def main():
     seed_everything()  # Set random seed for reproducibility
@@ -36,7 +35,6 @@ def main():
 
     training_log_dir = config['training_log_dir']
     fold_results_name = config['svm_fold_results_name']
-    fold_results_path = os.path.join(training_log_dir, fold_results_name)
     fold_results = pd.DataFrame({
         'fold': pd.Series(dtype='int8'),
         'val_accuracy': pd.Series(dtype='float')
@@ -82,42 +80,20 @@ def main():
     print(f"Test Accuracy: {test_accuracy:.4f}")
 
     plot_dir = config['plot_dir']
-    plot_name = 'svm_decision_boundary.png'
+    plot_name = 'svm_confusion_matrix.png'
     plot_path = os.path.join(plot_dir, plot_name)
     os.makedirs(plot_dir, exist_ok=True)
     
-    print("Generating 2D decision boundary visualization...")
-    # Reduce dimensions to 2D using PCA for visualization
-    pca = PCA(n_components=2)
-    train_features_2d = pca.fit_transform(train_features)
-    test_features_2d = pca.transform(test_features)
-    
-    # Train a new SVM on the 2D features specifically for plotting
-    svm_model_2d = SVC(kernel='rbf', probability=True, random_state=42)
-    svm_model_2d.fit(train_features_2d, train_labels)
-
-    fig, ax = plt.subplots(figsize=(10, 10))
-    DecisionBoundaryDisplay.from_estimator(
-        svm_model_2d,
-        test_features_2d,
-        response_method="predict",
-        cmap='tab10',
-        alpha=0.3,
-        ax=ax,
-        xlabel='PCA Component 1',
-        ylabel='PCA Component 2'
-    )
-    scatter = ax.scatter(test_features_2d[:, 0], test_features_2d[:, 1], c=test_labels, cmap='coolwarm', edgecolors='k', alpha=0.8)
-    
-    # Add the colorbar to the plot
-    cbar = plt.colorbar(scatter, ax=ax)
-    cbar.set_ticks(np.arange(len(crop_disease_classes)))
-    cbar.set_ticklabels(crop_disease_classes)
-    cbar.set_label('Crop Diseases')
-
-    ax.set_title('SVM Decision Boundary (PCA Reduced 2D)')
-    plt.savefig(plot_path, bbox_inches='tight')
+    print("Generating confusing matrix...")
+    cm = confusion_matrix(test_labels, test_predictions)
+    plt.figure(figsize=(20, 20))
+    sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', xticklabels=crop_disease_classes, yticklabels=crop_disease_classes)
+    plt.xlabel('Predicted')
+    plt.ylabel('True')
+    plt.title('Confusion Matrix')
+    plt.savefig(plot_path)
     plt.close()
+    print("Confusion matrix saved.")
 
     print("Classification Report on Test Data:")
     report = classification_report(test_labels, test_predictions, target_names=crop_disease_classes)
