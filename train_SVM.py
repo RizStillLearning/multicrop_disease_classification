@@ -107,7 +107,7 @@ def main():
         xlabel='PCA Component 1',
         ylabel='PCA Component 2'
     )
-    scatter = ax.scatter(test_features_2d[:, 0], test_features_2d[:, 1], c=test_labels, cmap='tab10', edgecolors='k', alpha=0.8)
+    scatter = ax.scatter(test_features_2d[:, 0], test_features_2d[:, 1], c=test_labels, cmap='coolwarm', edgecolors='k', alpha=0.8)
     
     # Add the colorbar to the plot
     cbar = plt.colorbar(scatter, ax=ax)
