@@ -32,8 +32,8 @@ def main():
     skf = StratifiedKFold(n_splits=k_fold, shuffle=True, random_state=42)
     current_fold = 0
     fold_results = pd.DataFrame({
-        'fold': pd.Series(dtype='int8'),
-        'best_val_loss': pd.Series(dtype='float')
+        'Fold': pd.Series(dtype='int8'),
+        'Best Validation Loss': pd.Series(dtype='float')
     })
 
     # Load current fold to resume training

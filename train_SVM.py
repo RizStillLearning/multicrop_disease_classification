@@ -36,8 +36,8 @@ def main():
     training_log_dir = config['training_log_dir']
     fold_results_name = config['svm_fold_results_name']
     fold_results = pd.DataFrame({
-        'fold': pd.Series(dtype='int8'),
-        'val_accuracy': pd.Series(dtype='float')
+        'Fold': pd.Series(dtype='int8'),
+        'Validation Accuracy': pd.Series(dtype='float')
     })
 
     for fold, (train_idx, val_idx) in enumerate(skf.split(np.zeros(len(y_numpy)), y_numpy)):
