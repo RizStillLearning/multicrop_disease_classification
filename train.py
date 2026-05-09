@@ -48,39 +48,27 @@ def train_model(train_loader, model, device, optimizer, criterion):
     loss = total_loss / len(train_loader)
     return loss
 
-def evaluate_model(test_loader, model, device):
-    model.eval()
-    correct = 0
-    total = 0
-
+def extract_features(models, dataloader, device):
+    batch_features = []
+    batch_labels = []
     with torch.no_grad():
-        for images, crop_disease_labels in test_loader:
-            images, crop_disease_labels = images.to(device), crop_disease_labels.to(device)
-            output = model(images)
+        for images, labels in dataloader:
+            images, labels = images.to(device), labels.to(device)
+            features = []
 
-            _, predicted = torch.max(output, dim=1)
-            total += crop_disease_labels.size(0)
-            correct += (predicted == crop_disease_labels).sum().item()
+            for model in models:
+                model.eval()
+                features.append(model(images))
 
-    acc = correct / total
-    return acc
+            features = torch.stack(features, dim=0).mean(dim=0)
 
-def get_labels(test_loader, model, device):
-    model.eval()
-    y_true = []
-    y_pred = []
+            batch_features.append(features.cpu().numpy())
+            batch_labels.append(labels.cpu().numpy())
 
-    with torch.no_grad():
-        for images, crop_disease_labels in test_loader:
-            images, crop_disease_labels = images.to(device), crop_disease_labels.to(device)
-            output = model(images)
+    features = np.concatenate(batch_features, axis=0)
+    labels = np.concatenate(batch_labels, axis=0)
+    return features, labels
 
-            _, predicted = torch.max(output, dim=1)
-
-            y_true.extend(crop_disease_labels.detach().cpu().numpy())
-            y_pred.extend(predicted.detach().cpu().numpy())
-
-    return np.array(y_true), np.array(y_pred)
 
 def get_metrics_per_class(y_true, y_pred, target_names):
     tp = np.zeros(len(target_names))

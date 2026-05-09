@@ -5,12 +5,15 @@ import copy
 import numpy as np
 import pandas as pd
 import torch.optim as optim
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.metrics import confusion_matrix
 from sklearn.utils.class_weight import compute_class_weight
 from sklearn.model_selection import train_test_split, StratifiedKFold
 from dataset import load_dataset, build_dataloader
 from utils import get_config, get_device, load_checkpoint, save_checkpoint, save_current_fold, load_current_fold, seed_everything
-from model import build_model, save_model
-from train import train_model, validate_model, evaluate_model, get_labels, save_classification_report, write_training_log
+from model import build_model, save_model, load_model
+from train import train_model, validate_model, save_classification_report, write_training_log
 
 def main():
     seed_everything()  # Set random seed for reproducibility
@@ -49,6 +52,7 @@ def main():
         print("No fold results found. Starting from fold 1.")
 
     y_numpy = np.array(train_val_df['crop_disease'].values)
+    backbone_models = []
 
     for i, (train_idx, val_idx) in enumerate(skf.split(np.zeros(len(y_numpy)), y_numpy)):
         if i < current_fold:
@@ -115,20 +119,69 @@ def main():
         fold_results.loc[i] = [i + 1, f"{best_val_loss:.4f}"]
         save_current_fold(training_log_dir, fold_results, fold_name=fold_results_name)
         print(f"Fold {i + 1} completed. Best validation loss: {best_val_loss:.4f}")
-        os.remove(checkpoint_path) # Clean up checkpoint after each fold
 
-    print("Evaluating model...")
-    acc = evaluate_model(test_dataloader, best_model_state, device)
-    print(f"Test accuracy: {acc:.4f}")
+        if i < k_fold - 1:
+            os.remove(checkpoint_path) # Clean up checkpoint after each fold
+
+        backbone_dir = config['backbone_dir']
+        backbone_name = f'backbone_fold_{i+1}.pth'
+        save_model(backbone_dir, backbone_name, best_model_state, crop_disease_classes=crop_disease_classes)
+
+    print("Evaluating ensemble models...")
+    for i in range(k_fold):
+        backbone_dir = config['backbone_dir']
+        backbone_name = f'backbone_fold_{i+1}.pth'
+        backbone_path = os.path.join(backbone_dir, backbone_name)
+        backbone = build_model(num_crop_disease_classes)
+        load_model(backbone_path, backbone)
+        backbone.to(device)
+        backbone_models.append(backbone)
+
+    for model in backbone_models:
+        model.eval()
+
+    y_true_ensemble = []
+    y_pred_ensemble = []
+
+    with torch.no_grad():
+        for image, label in test_dataloader:
+            image, label = image.to(device), label.to(device)
+            outputs = []
+            
+            for model in backbone_models:
+                outputs.append(model(image))
+            
+            outputs = torch.stack(outputs).mean(dim=0)
+            _, pred = torch.max(outputs, dim=1)
+            
+            y_true_ensemble.extend(label.cpu().numpy())
+            y_pred_ensemble.extend(pred.cpu().numpy())
+            
+    y_true = np.array(y_true_ensemble)
+    y_pred = np.array(y_pred_ensemble)
     
-    backbone_dir = config['backbone_dir']
-    backbone_name = config['backbone_name']
-    save_model(backbone_dir, backbone_name, best_model_state, crop_disease_classes=crop_disease_classes)
-
-    y_true, y_pred = get_labels(test_dataloader, best_model_state, device)
+    accuracy = (y_true == y_pred).sum() / len(y_true)
+    print(f"Ensemble Test Accuracy: {accuracy:.4f}")
     classification_report_dir = config['classification_report_dir']
     classification_report_name = config['backbone_classification_report_name']
     save_classification_report(y_true, y_pred, crop_disease_classes, classification_report_dir, classification_report_name)
+
+    plot_dir = config['plot_dir']
+    plot_name = 'backbone_confusion_matrix.png'
+    plot_path = os.path.join(plot_dir, plot_name)
+
+    os.makedirs(plot_dir, exist_ok=True)
+
+    print("Generating confusing matrix...")
+    cm = confusion_matrix(y_true, y_pred)
+    plt.figure(figsize=(20, 20))
+    sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', xticklabels=crop_disease_classes, yticklabels=crop_disease_classes)
+    plt.xlabel('Predicted')
+    plt.ylabel('True')
+    plt.title('Confusion Matrix')
+    plt.savefig(plot_path)
+    plt.close()
+    print("Confusion matrix saved.")
 
     del model
 

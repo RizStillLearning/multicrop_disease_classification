@@ -6,9 +6,9 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 from dataset import load_dataset, build_dataloader
-from model import build_model, load_model, extract_features
+from model import build_model, load_model
 from utils import get_config, get_device, save_current_fold, seed_everything
-from train_backbone import save_classification_report
+from train import extract_features, save_classification_report
 from sklearn.model_selection import train_test_split, StratifiedKFold
 from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVC
@@ -19,18 +19,22 @@ def main():
     device = get_device()
     config = get_config()
 
-    model = build_model(num_classes=config['num_classes'])
-    model.to(device)
-    backbone_path = os.path.join(config['backbone_dir'], config['backbone_name'])
-    crop_disease_classes = load_model(backbone_path, model)
-    model.classifier[1] = nn.Identity() 
-    model.eval()
+    k_fold = config['k_fold']
+    backbone_models = []
+    for i in range(k_fold):
+        model = build_model(num_classes=config['num_classes'])
+        model.to(device)
+        backbone_path = os.path.join(config['backbone_dir'], f'backbone_fold_{i+1}.pth')
+        crop_disease_classes = load_model(backbone_path, model)
+        model.classifier[1] = nn.Identity() 
+        model.eval()
+        backbone_models.append(model)
 
     print("Loading dataset...")
     df, crop_disease_classes = load_dataset(config['dataset_dir'])
-    train_val_df, test_df = train_test_split(df, test_size=0.2, random_state=42, stratify=df['crop_disease'])
+    train_val_df, test_df = train_test_split(df, test_size=0.2, random_state=50, stratify=df['crop_disease'])
     
-    skf = StratifiedKFold(n_splits=config['k_fold'], shuffle=True, random_state=42)
+    skf = StratifiedKFold(n_splits=config['k_fold'], shuffle=True, random_state=50)
     y_numpy = np.array(train_val_df['crop_disease'].values)
 
     training_log_dir = config['training_log_dir']
@@ -40,24 +44,26 @@ def main():
         'Validation Accuracy': pd.Series(dtype='float')
     })
 
+    cur_fold = 0
+    if os.path.exists(config['classifier_dir']):
+        cur_fold = len([f for f in os.listdir(config['classifier_dir']) if f.startswith('svm_fold_')])
+
     for fold, (train_idx, val_idx) in enumerate(skf.split(np.zeros(len(y_numpy)), y_numpy)):
+        if fold < cur_fold:
+            continue
+
         print(f"Processing fold {fold + 1}/{config['k_fold']}...")
         train_df = train_val_df.iloc[train_idx]
-        test_df = train_val_df.iloc[val_idx]
+        val_df = train_val_df.iloc[val_idx]
 
         train_dataloader = build_dataloader(train_df, mode='train')
-        val_dataloader = build_dataloader(test_df, mode='val')
+        val_dataloader = build_dataloader(val_df, mode='val')
 
         print("Extracting features for training data...")
-        train_features, train_labels = extract_features(model, train_dataloader, device)
+        train_features, train_labels = extract_features(backbone_models, train_dataloader, device)
 
         print("Extracting features for validation data...")
-        val_features, val_labels = extract_features(model, val_dataloader, device)
-
-        print("Standardizing features...")
-        scaler = StandardScaler()
-        train_features = scaler.fit_transform(train_features)
-        val_features = scaler.transform(val_features)
+        val_features, val_labels = extract_features(backbone_models, val_dataloader, device)
 
         print("Training SVM model...")
         svm_model = SVC(kernel='rbf', probability=True, random_state=42)
@@ -71,11 +77,29 @@ def main():
         fold_results.loc[fold] = [fold + 1, f"{val_accuracy:.4f}"]
         save_current_fold(training_log_dir, fold_results, fold_name=fold_results_name)
 
+        svm_model_path = os.path.join(config['classifier_dir'], f'svm_fold_{fold+1}.joblib')
+        os.makedirs(config['classifier_dir'], exist_ok=True)
+        joblib.dump(svm_model, svm_model_path)
+        print(f"SVM model saved to {svm_model_path}")
+
     print("Evaluating final SVM model on test data...")
     test_dataloader = build_dataloader(test_df, mode='test')
-    test_features, test_labels = extract_features(model, test_dataloader, device)
-    test_features = scaler.transform(test_features)
-    test_predictions = svm_model.predict(test_features)
+    test_features, test_labels = extract_features(backbone_models, test_dataloader, device)
+
+    svm_models = []
+    scalers = []
+    for fold in range(config['k_fold']):
+        svm_model_path = os.path.join(config['classifier_dir'], f'svm_fold_{fold+1}.joblib')
+        svm_models.append(joblib.load(svm_model_path))
+
+    test_predictions = []
+    for svm_model in svm_models:
+        pred = svm_model.predict_proba(test_features)
+        test_predictions.append(pred)
+
+    test_predictions = np.stack(test_predictions, axis=0)
+    test_predictions = np.mean(test_predictions, axis=0)
+    test_predictions = test_predictions.argmax(axis=1)
     test_accuracy = accuracy_score(test_labels, test_predictions)
     print(f"Test Accuracy: {test_accuracy:.4f}")
 
@@ -101,10 +125,7 @@ def main():
 
     save_classification_report(test_labels, test_predictions, crop_disease_classes, config['classification_report_dir'], config['svm_classification_report_name'])
 
-    svm_model_path = os.path.join(config['classifier_dir'], config['classifier_name'])
-    os.makedirs(config['classifier_dir'], exist_ok=True)
-    joblib.dump(svm_model, svm_model_path)
-    print(f"SVM model saved to {svm_model_path}")
+    del model
 
 if __name__ == '__main__':
     main()

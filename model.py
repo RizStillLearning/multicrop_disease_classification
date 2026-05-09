@@ -1,6 +1,5 @@
 import os
 import torch
-import torch.nn as nn
 from utils import get_device
 from models.efficientnet_b0 import get_cbam_efficientnet_b0
 
@@ -18,17 +17,3 @@ def load_model(model_path, model):
     model.load_state_dict(config['model_state_dict'])
     crop_disease_classes = config['crop_disease_classes']
     return crop_disease_classes
-
-def extract_features(model, dataloader, device):
-    batch_features = []
-    batch_labels = []
-    with torch.no_grad():
-        for images, labels in dataloader:
-            images, labels = images.to(device), labels.to(device)
-            feature = model(images)
-            batch_features.append(feature.cpu())
-            batch_labels.append(labels.cpu())
-
-    features = torch.cat(batch_features, dim=0)
-    labels = torch.cat(batch_labels, dim=0)
-    return features, labels
