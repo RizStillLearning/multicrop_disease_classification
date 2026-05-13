@@ -1,6 +1,6 @@
 import os
 import torch
-from utils import get_device
+from core.utils import get_device
 from models.efficientnet_b0 import get_cbam_efficientnet_b0
 
 def build_model(num_classes=16):

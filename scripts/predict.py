@@ -2,8 +2,12 @@ import joblib
 import torch.nn as nn
 import os
 from PIL import Image
-from model import build_model, load_model
-from utils import get_transform, get_config
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+from core.model import build_model, load_model
+from core.utils import get_transform, get_config
 
 config = get_config()
 model = build_model(num_classes=config['num_classes'])

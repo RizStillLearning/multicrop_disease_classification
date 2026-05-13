@@ -10,10 +10,14 @@ import seaborn as sns
 from sklearn.metrics import confusion_matrix
 from sklearn.utils.class_weight import compute_class_weight
 from sklearn.model_selection import train_test_split, StratifiedKFold
-from dataset import load_dataset, build_dataloader
-from utils import get_config, get_device, load_checkpoint, save_checkpoint, save_current_fold, load_current_fold, seed_everything
-from model import build_model, save_model, load_model
-from train import train_model, validate_model, save_classification_report, write_training_log
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+from core.dataset import load_dataset, build_dataloader
+from core.utils import get_config, get_device, load_checkpoint, save_checkpoint, save_current_fold, load_current_fold, seed_everything
+from core.model import build_model, save_model, load_model
+from core.train import train_model, validate_model, save_classification_report, write_training_log
 
 def main():
     seed_everything()  # Set random seed for reproducibility

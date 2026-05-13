@@ -5,10 +5,14 @@ import joblib
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
-from dataset import load_dataset, build_dataloader
-from model import build_model, load_model
-from utils import get_config, get_device, save_current_fold, seed_everything
-from train import extract_features, save_classification_report
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+from core.dataset import load_dataset, build_dataloader
+from core.model import build_model, load_model
+from core.utils import get_config, get_device, save_current_fold, seed_everything
+from core.train import extract_features, save_classification_report
 from sklearn.model_selection import train_test_split, StratifiedKFold
 from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVC

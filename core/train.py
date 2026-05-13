@@ -3,7 +3,7 @@ import torch
 import json
 import csv
 import numpy as np
-from utils import get_config
+from core.utils import get_config
 from sklearn.metrics import classification_report
 
 def validate_model(val_loader, model, device, criterion):

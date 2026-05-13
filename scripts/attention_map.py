@@ -10,8 +10,12 @@ from pathlib import Path
 from pytorch_grad_cam import GradCAM
 from pytorch_grad_cam.utils.image import show_cam_on_image
 
-from utils import get_config, get_transform
-from model import build_model, load_model
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+from core.utils import get_config, get_transform
+from core.model import build_model, load_model
 
 # ── 1. Config & device ──────────────────────────────────────────────────────
 config = get_config()

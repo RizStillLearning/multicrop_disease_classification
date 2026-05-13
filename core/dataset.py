@@ -2,7 +2,7 @@ import torch
 import pandas as pd
 from pathlib import Path
 from PIL import Image
-from utils import get_transform, get_config, get_target_transform
+from core.utils import get_transform, get_config, get_target_transform
 from torch.utils.data import Dataset, DataLoader
 from typing import Literal
 
