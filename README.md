@@ -14,18 +14,18 @@ Backbone has to be trained first before training the classifier
 
 To train the backbone (feature extractor), use the following command:
 ```bash
-python train_backbone.py
+python scripts/train_backbone.py
 ```
 
 To train the classifier, use the following command:
 ```bash
-python train_SVM.py
+python scripts/train_SVM.py
 ```
 
 ## Inference
 To perform inference with the trained model, use the following command:
 ```bash
-python predict.py
+python scripts/predict.py
 ```
 
 ### Dataset Format
