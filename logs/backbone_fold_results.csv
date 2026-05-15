@@ -1,6 +1,6 @@
-Fold,Best Validation Loss
-1,0.1439
-2,0.1214
-3,0.1323
-4,0.0837
-5,0.1301
+Fold,Best Validation Loss,Best Validation Accuracy
+1,0.1439,0.9519
+2,0.1381,0.944
+3,0.1208,0.9576
+4,0.0922,0.9698
+5,0.1106,0.9641

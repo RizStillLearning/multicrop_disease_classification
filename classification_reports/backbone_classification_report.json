@@ -19,8 +19,8 @@
     },
     "Corn__Healthy": {
         "precision": 1.0,
-        "recall": 0.9736842105263158,
-        "f1-score": 0.9866666666666667,
+        "recall": 0.9605263157894737,
+        "f1-score": 0.9798657718120806,
         "support": 76.0
     },
     "Corn__Leaf_blight": {
@@ -30,9 +30,9 @@
         "support": 74.0
     },
     "Corn__Streak_virus": {
-        "precision": 0.9523809523809523,
+        "precision": 0.9375,
         "recall": 1.0,
-        "f1-score": 0.975609756097561,
+        "f1-score": 0.967741935483871,
         "support": 60.0
     },
     "Potato__Fungi": {
@@ -60,9 +60,9 @@
         "support": 60.0
     },
     "Rice__Brown_spot": {
-        "precision": 0.9583333333333334,
-        "recall": 0.9078947368421053,
-        "f1-score": 0.9324324324324325,
+        "precision": 0.96,
+        "recall": 0.9473684210526315,
+        "f1-score": 0.9536423841059603,
         "support": 76.0
     },
     "Rice__Healthy": {
@@ -72,9 +72,9 @@
         "support": 70.0
     },
     "Rice__Leaf_blast": {
-        "precision": 0.9041095890410958,
+        "precision": 0.9428571428571428,
         "recall": 0.9705882352941176,
-        "f1-score": 0.9361702127659575,
+        "f1-score": 0.9565217391304348,
         "support": 68.0
     },
     "Tomato__Healthy": {
@@ -84,28 +84,28 @@
         "support": 70.0
     },
     "Tomato__Septoria_leaf_spot": {
-        "precision": 0.8981481481481481,
-        "recall": 0.8981481481481481,
-        "f1-score": 0.8981481481481481,
+        "precision": 0.8918918918918919,
+        "recall": 0.9166666666666666,
+        "f1-score": 0.9041095890410958,
         "support": 108.0
     },
     "Tomato__Verticulium_wilt": {
-        "precision": 0.9090909090909091,
-        "recall": 0.8910891089108911,
-        "f1-score": 0.9,
+        "precision": 0.9270833333333334,
+        "recall": 0.8811881188118812,
+        "f1-score": 0.9035532994923858,
         "support": 101.0
     },
-    "accuracy": 0.9666666666666667,
+    "accuracy": 0.9691056910569106,
     "macro avg": {
-        "precision": 0.9695358337614449,
-        "recall": 0.9701247314437138,
-        "f1-score": 0.9695261795206289,
+        "precision": 0.9718651735169406,
+        "recall": 0.9723080638120384,
+        "f1-score": 0.9718016484553202,
         "support": 1230.0
     },
     "weighted avg": {
-        "precision": 0.9670685216432708,
-        "recall": 0.9666666666666667,
-        "f1-score": 0.9666046914753634,
+        "precision": 0.9695158406319778,
+        "recall": 0.9691056910569106,
+        "f1-score": 0.9690515546781049,
         "support": 1230.0
     }
 }

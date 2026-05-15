@@ -1,4 +1,6 @@
 model_dir: "models/"
+classes_dir: "classes/"
+classes_file_name: "classes.txt"
 checkpoint_dir: "checkpoints/"
 checkpoint_name: "checkpoint.pth"
 backbone_dir: "backbone/"

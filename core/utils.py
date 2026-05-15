@@ -55,7 +55,7 @@ def get_transform(mode: Literal['train', 'val', 'test']):
 def get_target_transform():
     return transforms.Lambda(lambda x: torch.tensor(x, dtype=torch.long))
 
-def save_checkpoint(checkpoint_dir, checkpoint_name, model_state, optimizer_state, cur_epoch, best_val_loss):
+def save_checkpoint(checkpoint_dir, checkpoint_name, model_state, optimizer_state, cur_epoch, best_val_loss, best_val_acc):
     os.makedirs(checkpoint_dir, exist_ok=True)
     checkpoint_path = os.path.join(checkpoint_dir, checkpoint_name)
     torch.save({
@@ -63,6 +63,7 @@ def save_checkpoint(checkpoint_dir, checkpoint_name, model_state, optimizer_stat
         'optimizer_state_dict': optimizer_state.state_dict(),
         'cur_epoch': cur_epoch,
         'best_val_loss': best_val_loss,
+        'best_val_acc': best_val_acc,
     }, checkpoint_path)
 
 def save_current_fold(training_log_dir, fold_results, fold_name):
@@ -77,7 +78,8 @@ def load_checkpoint(checkpoint_path, model, best_model_state, optimizer):
     optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
     cur_epoch = checkpoint['cur_epoch']
     best_val_loss = checkpoint['best_val_loss']
-    return cur_epoch, best_val_loss
+    best_val_acc = checkpoint['best_val_acc']
+    return cur_epoch, best_val_loss, best_val_acc
 
 def load_current_fold(training_log_dir, fold_name):
     fold_path = os.path.join(training_log_dir, fold_name)

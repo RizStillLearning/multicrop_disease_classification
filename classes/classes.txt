@@ -1,0 +1,16 @@
+Cashew__Healthy
+Cashew__Leaf_miner
+Cashew__Red_rust
+Corn__Healthy
+Corn__Leaf_blight
+Corn__Streak_virus
+Potato__Fungi
+Potato__Healthy
+Potato__Nematode
+Rice__Bacterial_leaf_blight
+Rice__Brown_spot
+Rice__Healthy
+Rice__Leaf_blast
+Tomato__Healthy
+Tomato__Septoria_leaf_spot
+Tomato__Verticulium_wilt

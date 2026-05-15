@@ -40,7 +40,8 @@ def main():
     current_fold = 0
     fold_results = pd.DataFrame({
         'Fold': pd.Series(dtype='int8'),
-        'Best Validation Loss': pd.Series(dtype='float')
+        'Best Validation Loss': pd.Series(dtype='float'),
+        'Best Validation Accuracy': pd.Series(dtype='float')
     })
 
     # Load current fold to resume training
@@ -55,6 +56,7 @@ def main():
     else:
         print("No fold results found. Starting from fold 1.")
 
+    device = get_device()
     y_numpy = np.array(train_val_df['crop_disease'].values)
     backbone_models = []
 
@@ -71,11 +73,11 @@ def main():
         val_dataloader = build_dataloader(val_df, mode='val')
 
         model = build_model(num_classes=num_crop_disease_classes)
-        device = get_device()
         model.to(device)
 
         cur_epoch = 1
         best_val_loss = float('inf')
+        best_val_acc = float('-inf')
         best_model_state = build_model(num_classes=num_crop_disease_classes)
         best_model_state.to(device)
 
@@ -94,8 +96,8 @@ def main():
 
         if os.path.exists(checkpoint_path):
             print("Loading checkpoint...")
-            cur_epoch, best_val_loss = load_checkpoint(checkpoint_path, model, best_model_state, optimizer)
-            print(f"Resuming training from epoch {cur_epoch} with best validation loss {best_val_loss:.4f}")
+            cur_epoch, best_val_loss, best_val_acc = load_checkpoint(checkpoint_path, model, best_model_state, optimizer)
+            print(f"Resuming training from epoch {cur_epoch} with best validation loss {best_val_loss:.4f} and best validation accuracy {best_val_acc:.4f}")
         else:
             print("No checkpoint found. Starting training from scratch.")
 
@@ -110,26 +112,27 @@ def main():
 
             if val_loss < best_val_loss:
                 best_val_loss = val_loss
+                best_val_acc = val_acc
                 best_model_state = copy.deepcopy(model)
                 print("Best model saved.")
                 
-            save_checkpoint(checkpoint_dir, checkpoint_name, best_model_state, optimizer, epoch + 1, best_val_loss)
-            print(f"Current best validation loss: {best_val_loss:.4f}")
+            save_checkpoint(checkpoint_dir, checkpoint_name, best_model_state, optimizer, epoch + 1, best_val_loss, best_val_acc)
+            print(f"Current best validation loss: {best_val_loss:.4f} and best validation accuracy: {best_val_acc:.4f}")
             print("Checkpoint saved.")
 
             gc.collect()
             torch.cuda.empty_cache()
 
-        fold_results.loc[i] = [i + 1, f"{best_val_loss:.4f}"]
+        fold_results.loc[i] = [i + 1, f"{best_val_loss:.4f}", f"{best_val_acc:.4f}"]
         save_current_fold(training_log_dir, fold_results, fold_name=fold_results_name)
-        print(f"Fold {i + 1} completed. Best validation loss: {best_val_loss:.4f}")
+        print(f"Fold {i + 1} completed. Best validation loss: {best_val_loss:.4f} and best validation accuracy: {best_val_acc:.4f}")
 
         if i < k_fold - 1:
             os.remove(checkpoint_path) # Clean up checkpoint after each fold
 
         backbone_dir = config['backbone_dir']
         backbone_name = f'backbone_fold_{i+1}.pth'
-        save_model(backbone_dir, backbone_name, best_model_state, crop_disease_classes=crop_disease_classes)
+        save_model(backbone_dir, backbone_name, best_model_state)
 
     print("Evaluating ensemble models...")
     for i in range(k_fold):

@@ -9,14 +9,14 @@ import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from core.dataset import load_dataset, build_dataloader
+from core.dataset import load_dataset, load_classes, build_dataloader
 from core.model import build_model, load_model
 from core.utils import get_config, get_device, save_current_fold, seed_everything
 from core.train import extract_features, save_classification_report
 from sklearn.model_selection import train_test_split, StratifiedKFold
 from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVC
-from sklearn.metrics import classification_report, accuracy_score, confusion_matrix
+from sklearn.metrics import classification_report, accuracy_score, zero_one_loss, confusion_matrix
 
 def main():
     seed_everything()  # Set random seed for reproducibility
@@ -29,10 +29,12 @@ def main():
         model = build_model(num_classes=config['num_classes'])
         model.to(device)
         backbone_path = os.path.join(config['backbone_dir'], f'backbone_fold_{i+1}.pth')
-        crop_disease_classes = load_model(backbone_path, model)
+        load_model(backbone_path, model)
         model.classifier[1] = nn.Identity() 
         model.eval()
         backbone_models.append(model)
+
+    crop_disease_classes = load_classes()
 
     print("Loading dataset...")
     df, crop_disease_classes = load_dataset(config['dataset_dir'])
@@ -45,7 +47,8 @@ def main():
     fold_results_name = config['svm_fold_results_name']
     fold_results = pd.DataFrame({
         'Fold': pd.Series(dtype='int8'),
-        'Validation Accuracy': pd.Series(dtype='float')
+        'Validation Accuracy': pd.Series(dtype='float'),
+        'Validation Loss': pd.Series(dtype='float')
     })
 
     cur_fold = 0
@@ -76,9 +79,10 @@ def main():
         print("Evaluating SVM model on validation data...")
         val_predictions = svm_model.predict(val_features)
         val_accuracy = accuracy_score(val_labels, val_predictions)
-        print(f"Validation Accuracy: {val_accuracy:.4f}")
+        val_loss = zero_one_loss(val_labels, val_predictions)
+        print(f"Validation Accuracy: {val_accuracy:.4f}, Validation Loss: {val_loss:.4f}")
 
-        fold_results.loc[fold] = [fold + 1, f"{val_accuracy:.4f}"]
+        fold_results.loc[fold] = [fold + 1, f"{val_accuracy:.4f}", f"{val_loss:.4f}"]
         save_current_fold(training_log_dir, fold_results, fold_name=fold_results_name)
 
         svm_model_path = os.path.join(config['classifier_dir'], f'svm_fold_{fold+1}.joblib')
@@ -91,7 +95,6 @@ def main():
     test_features, test_labels = extract_features(backbone_models, test_dataloader, device)
 
     svm_models = []
-    scalers = []
     for fold in range(config['k_fold']):
         svm_model_path = os.path.join(config['classifier_dir'], f'svm_fold_{fold+1}.joblib')
         svm_models.append(joblib.load(svm_model_path))
@@ -105,7 +108,8 @@ def main():
     test_predictions = np.mean(test_predictions, axis=0)
     test_predictions = test_predictions.argmax(axis=1)
     test_accuracy = accuracy_score(test_labels, test_predictions)
-    print(f"Test Accuracy: {test_accuracy:.4f}")
+    test_loss = zero_one_loss(test_labels, test_predictions)
+    print(f"Test Accuracy: {test_accuracy:.4f}, Test Loss: {test_loss:.4f}")
 
     plot_dir = config['plot_dir']
     plot_name = 'svm_confusion_matrix.png'

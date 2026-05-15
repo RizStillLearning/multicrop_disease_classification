@@ -1,5 +1,7 @@
+import os
 import torch
 import pandas as pd
+import numpy as np
 from pathlib import Path
 from PIL import Image
 from core.utils import get_transform, get_config, get_target_transform
@@ -48,7 +50,29 @@ def load_dataset(data_dir):
         'crop_disease': crop_diseases
     })
 
+    config = get_config()
+    classes_dir = config['classes_dir']
+    classes_file_name = config['classes_file_name']
+    classes_path = os.path.join(classes_dir, classes_file_name)
+    os.makedirs(classes_dir, exist_ok=True)
+
+    with open(classes_path, 'w') as f:
+        for disease in crop_disease_classes:
+            f.write(f"{disease}\n")
+
     return df, crop_disease_classes
+
+def load_classes():
+    config = get_config()
+    classes_dir = config['classes_dir']
+    classes_file_name = config['classes_file_name']
+    classes_path = os.path.join(classes_dir, classes_file_name)
+    
+    with open(classes_path, 'r') as f:
+        classes = f.read().splitlines()
+
+    return classes
+        
 
 def build_dataloader(df, mode: Literal['train', 'val', 'test']):
     config = get_config()
