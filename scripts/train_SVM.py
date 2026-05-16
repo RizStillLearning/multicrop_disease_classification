@@ -47,8 +47,8 @@ def main():
     fold_results_name = config['svm_fold_results_name']
     fold_results = pd.DataFrame({
         'Fold': pd.Series(dtype='int8'),
+        'Validation Loss': pd.Series(dtype='float'),
         'Validation Accuracy': pd.Series(dtype='float'),
-        'Validation Loss': pd.Series(dtype='float')
     })
 
     cur_fold = 0
@@ -82,7 +82,7 @@ def main():
         val_loss = zero_one_loss(val_labels, val_predictions)
         print(f"Validation Accuracy: {val_accuracy:.4f}, Validation Loss: {val_loss:.4f}")
 
-        fold_results.loc[fold] = [fold + 1, f"{val_accuracy:.4f}", f"{val_loss:.4f}"]
+        fold_results.loc[fold] = [fold + 1, f"{val_loss:.4f}", f"{val_accuracy:.4f}"]
         save_current_fold(training_log_dir, fold_results, fold_name=fold_results_name)
 
         svm_model_path = os.path.join(config['classifier_dir'], f'svm_fold_{fold+1}.joblib')
