@@ -102,6 +102,9 @@ def main():
             print("No checkpoint found. Starting training from scratch.")
 
         print("Training model...")
+        patience = 5  # Early stopping patience (stop if no improvement for 5 epochs)
+        epochs_without_improvement = 0
+        
         for epoch in range(cur_epoch, num_epoch+1):
             train_loss = train_model(train_dataloader, model, device, optimizer, criterion)
             scheduler.step()
@@ -114,7 +117,11 @@ def main():
                 best_val_loss = val_loss
                 best_val_acc = val_acc
                 best_model_state = copy.deepcopy(model)
+                epochs_without_improvement = 0  # Reset counter when improvement is found
                 print("Best model saved.")
+            else:
+                epochs_without_improvement += 1
+                print(f"No improvement for {epochs_without_improvement}/{patience} epochs.")
                 
             save_checkpoint(checkpoint_dir, checkpoint_name, best_model_state, optimizer, epoch + 1, best_val_loss, best_val_acc)
             print(f"Current best validation loss: {best_val_loss:.4f} and best validation accuracy: {best_val_acc:.4f}")

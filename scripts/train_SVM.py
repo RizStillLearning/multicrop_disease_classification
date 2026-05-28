@@ -14,7 +14,6 @@ from core.model import build_model, load_model
 from core.utils import get_config, get_device, save_current_fold, seed_everything
 from core.train import extract_features, save_classification_report
 from sklearn.model_selection import train_test_split, StratifiedKFold
-from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVC
 from sklearn.metrics import classification_report, accuracy_score, zero_one_loss, confusion_matrix
 
