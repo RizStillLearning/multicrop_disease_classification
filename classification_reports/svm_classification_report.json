@@ -1,20 +1,20 @@
 {
     "Cashew__Healthy": {
         "precision": 1.0,
-        "recall": 0.9911504424778761,
-        "f1-score": 0.9955555555555555,
+        "recall": 1.0,
+        "f1-score": 1.0,
         "support": 113.0
     },
     "Cashew__Leaf_miner": {
-        "precision": 0.9910714285714286,
-        "recall": 1.0,
-        "f1-score": 0.9955156950672646,
+        "precision": 1.0,
+        "recall": 0.990990990990991,
+        "f1-score": 0.995475113122172,
         "support": 111.0
     },
     "Cashew__Red_rust": {
-        "precision": 1.0,
+        "precision": 0.9912280701754386,
         "recall": 1.0,
-        "f1-score": 1.0,
+        "f1-score": 0.9955947136563876,
         "support": 113.0
     },
     "Corn__Healthy": {
@@ -24,15 +24,15 @@
         "support": 101.0
     },
     "Corn__Leaf_blight": {
-        "precision": 0.98989898989899,
+        "precision": 1.0,
         "recall": 0.98989898989899,
-        "f1-score": 0.98989898989899,
+        "f1-score": 0.9949238578680203,
         "support": 99.0
     },
     "Corn__Streak_virus": {
-        "precision": 0.9873417721518988,
-        "recall": 0.975,
-        "f1-score": 0.9811320754716981,
+        "precision": 0.9875,
+        "recall": 0.9875,
+        "f1-score": 0.9875,
         "support": 80.0
     },
     "Potato__Fungi": {
@@ -60,21 +60,21 @@
         "support": 80.0
     },
     "Rice__Brown_spot": {
-        "precision": 0.9791666666666666,
-        "recall": 0.9306930693069307,
-        "f1-score": 0.9543147208121827,
+        "precision": 0.9803921568627451,
+        "recall": 0.9900990099009901,
+        "f1-score": 0.9852216748768473,
         "support": 101.0
     },
     "Rice__Healthy": {
-        "precision": 0.989247311827957,
+        "precision": 1.0,
         "recall": 0.989247311827957,
-        "f1-score": 0.989247311827957,
+        "f1-score": 0.9945945945945946,
         "support": 93.0
     },
     "Rice__Leaf_blast": {
-        "precision": 0.9375,
+        "precision": 0.989010989010989,
         "recall": 0.989010989010989,
-        "f1-score": 0.9625668449197861,
+        "f1-score": 0.989010989010989,
         "support": 91.0
     },
     "Tomato__Healthy": {
@@ -84,28 +84,28 @@
         "support": 93.0
     },
     "Tomato__Septoria_leaf_spot": {
-        "precision": 0.9855072463768116,
-        "recall": 0.9444444444444444,
-        "f1-score": 0.9645390070921985,
+        "precision": 0.9928571428571429,
+        "recall": 0.9652777777777778,
+        "f1-score": 0.9788732394366197,
         "support": 144.0
     },
     "Tomato__Verticulium_wilt": {
-        "precision": 0.9568345323741008,
-        "recall": 0.9851851851851852,
-        "f1-score": 0.9708029197080292,
+        "precision": 0.9781021897810219,
+        "recall": 0.9925925925925926,
+        "f1-score": 0.9852941176470589,
         "support": 135.0
     },
-    "accuracy": 0.9859670530811471,
+    "accuracy": 0.9926784624771202,
     "macro avg": {
-        "precision": 0.9866069621700175,
-        "recall": 0.9871644020095233,
-        "f1-score": 0.9867505446316835,
+        "precision": 0.9930146247212351,
+        "recall": 0.993413603875018,
+        "f1-score": 0.9931827433728728,
         "support": 1639.0
     },
     "weighted avg": {
-        "precision": 0.9861758500368547,
-        "recall": 0.9859670530811471,
-        "f1-score": 0.9859274363585302,
+        "precision": 0.992736737736153,
+        "recall": 0.9926784624771202,
+        "f1-score": 0.9926709226978716,
         "support": 1639.0
     }
 }
