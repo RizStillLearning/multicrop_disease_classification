@@ -1,0 +1,152 @@
+import torch.nn as nn
+import numpy as np
+import os
+import joblib
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
+
+from core.dataset import load_dataset, load_classes, build_dataloader
+from core.model import build_model, load_model
+from core.utils import get_config, get_device, save_current_fold, seed_everything
+from core.train import extract_features, save_classification_report
+from sklearn.model_selection import train_test_split, StratifiedKFold
+from sklearn.svm import SVC
+from sklearn.metrics import classification_report, accuracy_score, zero_one_loss, confusion_matrix
+
+def main():
+    seed_everything()  # Set random seed for reproducibility
+    device = get_device()
+
+    config_path = 'efficientnet_cbam_svm/config.yaml'
+    config = get_config(config_path)
+
+    k_fold = config['k_fold']
+    backbone_config = config['backbone']
+    backbone_dir = backbone_config['dir']
+    
+    backbone_models = []
+    for i in range(k_fold):
+        model = build_model(num_classes=config['num_classes'], use_cbam=True)
+        model.to(device)
+        backbone_path = os.path.join(backbone_dir, f'backbone_fold_{i+1}.pth')
+        load_model(backbone_path, model)
+        model.classifier[1] = nn.Identity() 
+        model.eval()
+        backbone_models.append(model)
+
+    classes = load_classes(config_path)
+
+    print("Loading dataset...")
+    df, classes = load_dataset(config_path)
+    train_val_df, test_df = train_test_split(df, test_size=0.2, random_state=50, stratify=df['crop_disease'])
+    
+    skf = StratifiedKFold(n_splits=config['k_fold'], shuffle=True, random_state=50)
+    y_numpy = np.array(train_val_df['crop_disease'].values)
+
+    training_log_config = config['training_log']
+    training_log_dir = training_log_config['dir']
+
+    fold_results_config = config['fold_results']
+    fold_results_dir = fold_results_config['dir']
+    fold_results_name = fold_results_config['classifier']
+    fold_results = pd.DataFrame({
+        'Fold': pd.Series(dtype='int8'),
+        'Validation Loss': pd.Series(dtype='float'),
+        'Validation Accuracy': pd.Series(dtype='float'),
+    })
+
+    cur_fold = 0
+    classifier_dir = config['classifier']['dir']
+
+    if os.path.exists(classifier_dir):
+        cur_fold = len([f for f in os.listdir(classifier_dir) if f.startswith('svm_fold_')])
+
+    for fold, (train_idx, val_idx) in enumerate(skf.split(np.zeros(len(y_numpy)), y_numpy)):
+        if fold < cur_fold:
+            continue
+
+        print(f"Processing fold {fold + 1}/{config['k_fold']}...")
+        train_df = train_val_df.iloc[train_idx]
+        val_df = train_val_df.iloc[val_idx]
+
+        train_dataloader = build_dataloader(train_df, mode='train', config_path=config_path)
+        val_dataloader = build_dataloader(val_df, mode='val', config_path=config_path)
+
+        print("Extracting features for training data...")
+        train_features, train_labels = extract_features(backbone_models, train_dataloader, device)
+
+        print("Extracting features for validation data...")
+        val_features, val_labels = extract_features(backbone_models, val_dataloader, device)
+
+        print("Training SVM model...")
+        svm_model = SVC(kernel='rbf', probability=True, random_state=42)
+        svm_model.fit(train_features, train_labels)
+
+        print("Evaluating SVM model on validation data...")
+        val_predictions = svm_model.predict(val_features)
+        val_accuracy = accuracy_score(val_labels, val_predictions)
+        val_loss = zero_one_loss(val_labels, val_predictions)
+        print(f"Validation Accuracy: {val_accuracy:.4f}, Validation Loss: {val_loss:.4f}")
+
+        fold_results.loc[fold] = [fold + 1, f"{val_loss:.4f}", f"{val_accuracy:.4f}"]
+        save_current_fold(fold_results_dir, fold_results_name, fold_results)
+
+        svm_model_path = os.path.join(classifier_dir, f'svm_fold_{fold+1}.joblib')
+        os.makedirs(classifier_dir, exist_ok=True)
+        joblib.dump(svm_model, svm_model_path)
+        print(f"SVM model saved to {svm_model_path}")
+
+    print("Evaluating final SVM model on test data...")
+    test_dataloader = build_dataloader(test_df, mode='test', config_path=config_path)
+    test_features, test_labels = extract_features(backbone_models, test_dataloader, device)
+
+    svm_models = []
+    for fold in range(config['k_fold']):
+        svm_model_path = os.path.join(classifier_dir, f'svm_fold_{fold+1}.joblib')
+        svm_models.append(joblib.load(svm_model_path))
+
+    test_predictions = []
+    for svm_model in svm_models:
+        pred = svm_model.predict_proba(test_features)
+        test_predictions.append(pred)
+
+    test_predictions = np.stack(test_predictions, axis=0)
+    test_predictions = np.mean(test_predictions, axis=0)
+    test_predictions = test_predictions.argmax(axis=1)
+    test_accuracy = accuracy_score(test_labels, test_predictions)
+    test_loss = zero_one_loss(test_labels, test_predictions)
+    print(f"Test Accuracy: {test_accuracy:.4f}, Test Loss: {test_loss:.4f}")
+
+    plot_dir = config['plot_dir']
+    plot_name = 'svm_confusion_matrix.png'
+    plot_path = os.path.join(plot_dir, plot_name)
+    os.makedirs(plot_dir, exist_ok=True)
+    
+    print("Generating confusing matrix...")
+    cm = confusion_matrix(test_labels, test_predictions)
+    plt.figure(figsize=(20, 20))
+    sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', xticklabels=classes, yticklabels=classes)
+    plt.xlabel('Predicted')
+    plt.ylabel('True')
+    plt.title('Confusion Matrix')
+    plt.savefig(plot_path)
+    plt.close()
+    print("Confusion matrix saved.")
+
+    print("Classification Report on Test Data:")
+    report = classification_report(test_labels, test_predictions, target_names=classes)
+    print(report)
+
+    report_config = config['classification_report']
+    report_dir = report_config['dir']
+    report_name = report_config['svm']
+    save_classification_report(test_labels, test_predictions, classes, report_dir, report_name)
+
+    del model
+
+if __name__ == '__main__':
+    main()

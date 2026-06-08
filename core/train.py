@@ -102,10 +102,11 @@ def get_metrics_per_class(y_true, y_pred, target_names):
 
     return metrics
 
-def write_training_log(epoch, train_loss, val_loss, val_acc):
-    config = get_config()
-    file_name = config['training_log_name']
-    log_dir = config['training_log_dir']
+def write_training_log(config_path, epoch, train_loss, val_loss, val_acc):
+    config = get_config(config_path)
+    training_config = config['training_log']
+    file_name = training_config['name']
+    log_dir = training_config['dir']
     file_path = os.path.join(log_dir, file_name)
     os.makedirs(log_dir, exist_ok=True)
     mode = 'w' if epoch == 1 else 'a'

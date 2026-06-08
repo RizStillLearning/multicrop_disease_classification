@@ -1,0 +1,111 @@
+{
+    "Cashew__Healthy": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 113.0
+    },
+    "Cashew__Leaf_miner": {
+        "precision": 1.0,
+        "recall": 0.990990990990991,
+        "f1-score": 0.995475113122172,
+        "support": 111.0
+    },
+    "Cashew__Red_rust": {
+        "precision": 0.9912280701754386,
+        "recall": 1.0,
+        "f1-score": 0.9955947136563876,
+        "support": 113.0
+    },
+    "Corn__Healthy": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 101.0
+    },
+    "Corn__Leaf_blight": {
+        "precision": 1.0,
+        "recall": 0.98989898989899,
+        "f1-score": 0.9949238578680203,
+        "support": 99.0
+    },
+    "Corn__Streak_virus": {
+        "precision": 0.9876543209876543,
+        "recall": 1.0,
+        "f1-score": 0.9937888198757764,
+        "support": 80.0
+    },
+    "Potato__Fungi": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 78.0
+    },
+    "Potato__Healthy": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 80.0
+    },
+    "Potato__Nematode": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 127.0
+    },
+    "Rice__Bacterial_leaf_blight": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 80.0
+    },
+    "Rice__Brown_spot": {
+        "precision": 0.98,
+        "recall": 0.9702970297029703,
+        "f1-score": 0.9751243781094527,
+        "support": 101.0
+    },
+    "Rice__Healthy": {
+        "precision": 1.0,
+        "recall": 0.989247311827957,
+        "f1-score": 0.9945945945945946,
+        "support": 93.0
+    },
+    "Rice__Leaf_blast": {
+        "precision": 0.967741935483871,
+        "recall": 0.989010989010989,
+        "f1-score": 0.9782608695652174,
+        "support": 91.0
+    },
+    "Tomato__Healthy": {
+        "precision": 0.9789473684210527,
+        "recall": 1.0,
+        "f1-score": 0.9893617021276596,
+        "support": 93.0
+    },
+    "Tomato__Septoria_leaf_spot": {
+        "precision": 1.0,
+        "recall": 0.9722222222222222,
+        "f1-score": 0.9859154929577465,
+        "support": 144.0
+    },
+    "Tomato__Verticulium_wilt": {
+        "precision": 0.9854014598540146,
+        "recall": 1.0,
+        "f1-score": 0.9926470588235294,
+        "support": 135.0
+    },
+    "accuracy": 0.9932885906040269,
+    "macro avg": {
+        "precision": 0.993185822182627,
+        "recall": 0.9938542208533825,
+        "f1-score": 0.9934804125437848,
+        "support": 1639.0
+    },
+    "weighted avg": {
+        "precision": 0.993372139158828,
+        "recall": 0.9932885906040269,
+        "f1-score": 0.9932867166323858,
+        "support": 1639.0
+    }
+}

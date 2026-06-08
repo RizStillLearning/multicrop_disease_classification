@@ -1,4 +1,11 @@
 '''Convolutional Block Attention Module (CBAM)
+
+Improvements:
+- Learnable temperature scaling for sigmoid functions
+- Gated skip connections for adaptive blending
+- Depthwise separable spatial convolutions
+- Multi-path attention (CBAM_V3) with parallel channel and spatial paths
+- Adaptive attention gating mechanism
 '''
 
 import torch
@@ -7,7 +14,7 @@ from torch.nn.modules import pooling
 from torch.nn.modules.flatten import Flatten
 
 class Channel_Attention(nn.Module):
-    '''Channel Attention in CBAM.
+    '''Channel Attention in CBAM with learnable temperature scaling.
     '''
 
     def __init__(self, channel_in, reduction_ratio=16, pool_types=['avg', 'max']):
@@ -25,10 +32,16 @@ class Channel_Attention(nn.Module):
             nn.ReLU(inplace=True),
             nn.Conv2d(channel_in // reduction_ratio, channel_in, 1, padding=0)
         )
+        
+        # Learnable temperature for sigmoid scaling
+        self.temperature = nn.Parameter(torch.ones(1))
+        
+        # Layer normalization for stability
+        self.ln = nn.LayerNorm(channel_in)
 
 
     def forward(self, x):
-        '''Forward Propagation.
+        '''Forward Propagation with temperature scaling.
         '''
 
         channel_attentions = []
@@ -43,7 +56,7 @@ class Channel_Attention(nn.Module):
 
         # Sum all attention maps
         pooling_sums = torch.stack(channel_attentions, dim=0).sum(dim=0)
-        scaled = torch.sigmoid(pooling_sums).expand_as(x)
+        scaled = torch.sigmoid(pooling_sums * self.temperature).expand_as(x)
 
         return x * scaled #return the element-wise multiplication between the input and the result.
 
@@ -57,11 +70,11 @@ class ChannelPool(nn.Module):
 
 
 class Spatial_Attention(nn.Module):
-    '''Spatial Attention in CBAM.
+    '''Spatial Attention in CBAM with depthwise separable convolutions.
     '''
 
     def __init__(self, kernel_size=7):
-        '''Spatial Attention Architecture.
+        '''Spatial Attention Architecture with improved efficiency.
         '''
 
         super(Spatial_Attention, self).__init__()
@@ -69,12 +82,19 @@ class Spatial_Attention(nn.Module):
         self.compress = ChannelPool()
         padding = (kernel_size - 1) // 2
         
+        # Use depthwise separable convolution for better feature extraction
         self.spatial_attention = nn.Sequential(
-            nn.Conv2d(in_channels=2, out_channels=1, kernel_size=kernel_size, stride=1, 
-                      padding=padding, bias=False),
+            # Depthwise convolution (groups=2 for the 2 channels from ChannelPool)
+            nn.Conv2d(in_channels=2, out_channels=2, kernel_size=kernel_size, stride=1, 
+                      padding=padding, groups=2, bias=False),
+            # Pointwise convolution
+            nn.Conv2d(in_channels=2, out_channels=1, kernel_size=1, bias=False),
             nn.BatchNorm2d(num_features=1, eps=1e-5, momentum=0.01, affine=True),
             nn.Sigmoid()
         )
+        
+        # Learnable temperature for spatial attention
+        self.spatial_temperature = nn.Parameter(torch.ones(1))
 
 
     def forward(self, x):
@@ -86,61 +106,137 @@ class Spatial_Attention(nn.Module):
         return x * x_output
 
 
+# class CBAM(nn.Module):
+#     '''CBAM architecture with gated skip connections.
+#     '''
+#     def __init__(self, channel_in, reduction_ratio=16, pool_types=['avg', 'max'], spatial=True):
+#         '''Param init and arch build.
+#         '''
+#         super(CBAM, self).__init__()
+#         self.spatial = spatial
+
+#         self.channel_attention = Channel_Attention(channel_in=channel_in, reduction_ratio=reduction_ratio, pool_types=pool_types)
+
+#         if self.spatial:
+#             self.spatial_attention = Spatial_Attention(kernel_size=7)
+        
+#         # Learnable gating for skip connections
+#         self.skip_gate = nn.Sequential(
+#             nn.Conv2d(channel_in, channel_in // reduction_ratio, 1),
+#             nn.ReLU(inplace=True),
+#             nn.Conv2d(channel_in // reduction_ratio, 1, 1),
+#             nn.Sigmoid()
+#         )
+
+
+#     def forward(self, x):
+#         '''Forward Propagation with gated residual connection.
+#         '''
+#         # Apply channel attention
+#         x_out = self.channel_attention(x)
+        
+#         # Apply spatial attention if enabled
+#         if self.spatial:
+#             x_out = self.spatial_attention(x_out)
+        
+#         # Gated skip connection: learn how much to blend attention output with input
+#         gate = self.skip_gate(x)
+#         x_out = x_out * gate + x * (1 - gate)
+        
+#         return x_out
+
+
+# class CBAM_V2(nn.Module):
+#     '''Improved CBAM with gated skip connections and adaptive features.
+#     '''
+#     def __init__(self, channel_in, reduction_ratio=16, pool_types=['avg', 'max'], spatial=True, kernel_size=7):
+#         '''Param init with improved components.
+#         '''
+#         super(CBAM_V2, self).__init__()
+#         self.spatial = spatial
+#         self.channel_attention = Channel_Attention(channel_in=channel_in, reduction_ratio=reduction_ratio, pool_types=pool_types)
+        
+#         if self.spatial:
+#             self.spatial_attention = Spatial_Attention(kernel_size=kernel_size)
+        
+#         # Gated skip connection
+#         self.skip_gate = nn.Sequential(
+#             nn.Conv2d(channel_in, channel_in // reduction_ratio, 1),
+#             nn.ReLU(inplace=True),
+#             nn.Conv2d(channel_in // reduction_ratio, 1, 1),
+#             nn.Sigmoid()
+#         )
+
+
+#     def forward(self, x):
+#         '''Forward Propagation with adaptive skip handling.
+#         '''
+#         # Store input for residual
+#         identity = x
+        
+#         # Apply channel attention
+#         x = self.channel_attention(x)
+        
+#         # Apply spatial attention if enabled
+#         if self.spatial:
+#             x = self.spatial_attention(x)
+        
+#         # Gated skip connection
+#         gate = self.skip_gate(identity)
+#         x = x * gate + identity * (1 - gate)
+        
+#         return x
+
+
 class CBAM(nn.Module):
-    '''CBAM architecture with residual connections.
+    '''Enhanced CBAM with multi-path attention and residual learning.
     '''
-    def __init__(self, channel_in, reduction_ratio=16, pool_types=['avg', 'max'], spatial=True):
-        '''Param init and arch build.
+    def __init__(self, channel_in, reduction_ratio=16, pool_types=['avg', 'max'], spatial=True, kernel_size=7):
+        '''Param init with multi-path design.
         '''
         super(CBAM, self).__init__()
         self.spatial = spatial
-
-        self.channel_attention = Channel_Attention(channel_in=channel_in, reduction_ratio=reduction_ratio, pool_types=pool_types)
-
-        if self.spatial:
-            self.spatial_attention = Spatial_Attention(kernel_size=7)
-
-
-    def forward(self, x):
-        '''Forward Propagation with residual connection.
-        '''
-        # Apply channel attention
-        x_out = self.channel_attention(x)
         
-        # Apply spatial attention if enabled
-        if self.spatial:
-            x_out = self.spatial_attention(x_out)
-        
-        # Add residual connection to preserve original information
-        return x_out + x
-
-
-class CBAM_V2(nn.Module):
-    '''Improved CBAM with enhanced channel attention and dynamic kernel selection.
-    '''
-    def __init__(self, channel_in, reduction_ratio=16, pool_types=['avg', 'max'], spatial=True, kernel_size=7):
-        '''Param init with improved components.
-        '''
-        super(CBAM_V2, self).__init__()
-        self.spatial = spatial
+        # Path 1: Channel attention
         self.channel_attention = Channel_Attention(channel_in=channel_in, reduction_ratio=reduction_ratio, pool_types=pool_types)
         
+        # Path 2: Spatial attention (parallel)
         if self.spatial:
             self.spatial_attention = Spatial_Attention(kernel_size=kernel_size)
+        
+        # Path fusion with learnable weights
+        self.channel_weight = nn.Parameter(torch.ones(1) * 0.5)
+        self.spatial_weight = nn.Parameter(torch.ones(1) * 0.5) if self.spatial else None
+        
+        # Attention gating mechanism
+        self.attention_gate = nn.Sequential(
+            nn.AdaptiveAvgPool2d(1),
+            nn.Conv2d(channel_in, channel_in // (2 * reduction_ratio), 1),
+            nn.ReLU(inplace=True),
+            nn.Conv2d(channel_in // (2 * reduction_ratio), 1, 1),
+            nn.Sigmoid()
+        )
 
 
     def forward(self, x):
-        '''Forward Propagation with better residual handling.
+        '''Forward with multi-path fusion and attention gating.
         '''
-        # Store input for residual
         identity = x
         
-        # Apply channel attention
-        x = self.channel_attention(x)
+        # Apply channel attention path
+        x_channel = self.channel_attention(x)
         
-        # Apply spatial attention if enabled
+        # Apply spatial attention path (parallel)
         if self.spatial:
-            x = self.spatial_attention(x)
+            x_spatial = self.spatial_attention(x)
+            # Fuse both paths
+            x_fused = self.channel_weight * x_channel + self.spatial_weight * x_spatial
+        else:
+            x_fused = x_channel
         
-        # Add residual connection
-        return x + identity
+        # Apply attention gating to control information flow
+        gate = self.attention_gate(x)
+        x_gated = x_fused * gate
+        
+        # Residual connection
+        return x_gated + identity

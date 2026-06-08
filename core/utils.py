@@ -5,7 +5,7 @@ import pandas as pd
 from typing import Literal
 from torchvision import transforms
 
-def get_config(config_file='config.yaml'):
+def get_config(config_file):
     config = None
     with open(config_file, 'r') as f:
         config = yaml.safe_load(f)
@@ -21,11 +21,11 @@ def seed_everything(seed=42):
 def get_device():
     return torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-def get_transform(mode: Literal['train', 'val', 'test']):
+def get_transform(mode: Literal['train', 'val', 'test'], config_path):
     mean = (0.485, 0.456, 0.406)
     std = (0.229, 0.224, 0.225)
 
-    config = get_config()
+    config = get_config(config_path)
     img_size = config['image_size']
 
     transform_dict = {
@@ -66,9 +66,9 @@ def save_checkpoint(checkpoint_dir, checkpoint_name, model_state, optimizer_stat
         'best_val_acc': best_val_acc,
     }, checkpoint_path)
 
-def save_current_fold(training_log_dir, fold_results, fold_name):
-    os.makedirs(training_log_dir, exist_ok=True)
-    fold_path = os.path.join(training_log_dir, fold_name)
+def save_current_fold(result_dir, fold_name, fold_results):
+    os.makedirs(result_dir, exist_ok=True)
+    fold_path = os.path.join(result_dir, fold_name)
     fold_results.to_csv(fold_path, index=False)
 
 def load_checkpoint(checkpoint_path, model, best_model_state, optimizer):
@@ -81,7 +81,6 @@ def load_checkpoint(checkpoint_path, model, best_model_state, optimizer):
     best_val_acc = checkpoint['best_val_acc']
     return cur_epoch, best_val_loss, best_val_acc
 
-def load_current_fold(training_log_dir, fold_name):
-    fold_path = os.path.join(training_log_dir, fold_name)
+def load_current_fold(fold_path):
     df = pd.read_csv(fold_path)
     return df

@@ -78,34 +78,34 @@
         "support": 91.0
     },
     "Tomato__Healthy": {
-        "precision": 0.9789473684210527,
+        "precision": 0.96875,
         "recall": 1.0,
-        "f1-score": 0.9893617021276596,
+        "f1-score": 0.9841269841269841,
         "support": 93.0
     },
     "Tomato__Septoria_leaf_spot": {
-        "precision": 0.9928571428571429,
-        "recall": 0.9652777777777778,
-        "f1-score": 0.9788732394366197,
+        "precision": 1.0,
+        "recall": 0.9513888888888888,
+        "f1-score": 0.9750889679715302,
         "support": 144.0
     },
     "Tomato__Verticulium_wilt": {
-        "precision": 0.9781021897810219,
-        "recall": 0.9925925925925926,
-        "f1-score": 0.9852941176470589,
+        "precision": 0.9712230215827338,
+        "recall": 1.0,
+        "f1-score": 0.9854014598540146,
         "support": 135.0
     },
-    "accuracy": 0.9926784624771202,
+    "accuracy": 0.9920683343502136,
     "macro avg": {
-        "precision": 0.9930146247212351,
-        "recall": 0.993413603875018,
-        "f1-score": 0.9931827433728728,
+        "precision": 0.9923937697539549,
+        "recall": 0.9930085112824254,
+        "f1-score": 0.9926257654191972,
         "support": 1639.0
     },
     "weighted avg": {
-        "precision": 0.992736737736153,
-        "recall": 0.9926784624771202,
-        "f1-score": 0.9926709226978716,
+        "precision": 0.9922190613838923,
+        "recall": 0.9920683343502136,
+        "f1-score": 0.9920502560309424,
         "support": 1639.0
     }
 }
