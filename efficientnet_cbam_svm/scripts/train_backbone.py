@@ -7,12 +7,13 @@ import pandas as pd
 import torch.optim as optim
 import matplotlib.pyplot as plt
 import seaborn as sns
+from tqdm import tqdm
 from sklearn.metrics import confusion_matrix
 from sklearn.utils.class_weight import compute_class_weight
 from sklearn.model_selection import train_test_split, StratifiedKFold
 import sys
 import os
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
 
 from core.dataset import load_dataset, build_dataloader
 from core.utils import get_config, get_device, load_checkpoint, save_checkpoint, save_current_fold, load_current_fold, seed_everything
@@ -21,19 +22,20 @@ from core.train import train_model, validate_model, save_classification_report, 
 
 def main():
     seed_everything()  # Set random seed for reproducibility
-    config = get_config()
+    config_name = 'efficientnet_cbam_svm/config.yaml'
+    config = get_config(config_name)
 
     print("Loading dataset...")    
     
-    df, crop_disease_classes = load_dataset(config['dataset_dir'])
+    df, classes = load_dataset(config_name)
 
     print("Splitting dataset into train, validation, and test data...")
     train_val_df, test_df = train_test_split(df, test_size=0.15, random_state=42, stratify=df['crop_disease'])
 
     print("Building dataloader...")
-    test_dataloader = build_dataloader(test_df, 'test')
+    test_dataloader = build_dataloader(test_df, 'test', config_name)
 
-    num_crop_disease_classes = len(crop_disease_classes)
+    num_classes = len(classes)
 
     k_fold = config['k_fold']
     skf = StratifiedKFold(n_splits=k_fold, shuffle=True, random_state=42)
@@ -45,12 +47,11 @@ def main():
     })
 
     # Load current fold to resume training
-    training_log_dir = config['training_log_dir']
-    fold_results_name = config['backbone_fold_results_name']
-    fold_results_path = os.path.join(training_log_dir, fold_results_name)
+    fold_results_config = config['fold_results']
+    fold_results_path = os.path.join(fold_results_config['dir'], fold_results_config['backbone'])
 
     if os.path.exists(fold_results_path):
-        fold_results = load_current_fold(training_log_dir, fold_results_name)
+        fold_results = load_current_fold(fold_results_path)
         current_fold = len(fold_results)
         print(f"Resuming from fold {current_fold + 1}")
     else:
@@ -58,7 +59,9 @@ def main():
 
     device = get_device()
     y_numpy = np.array(train_val_df['crop_disease'].values)
-    backbone_models = []
+    backbone_models = []        
+    backbone_config = config['backbone']
+    backbone_dir = backbone_config['dir']
 
     for i, (train_idx, val_idx) in enumerate(skf.split(np.zeros(len(y_numpy)), y_numpy)):
         if i < current_fold:
@@ -69,21 +72,20 @@ def main():
         train_df = train_val_df.iloc[train_idx]
         val_df = train_val_df.iloc[val_idx]
 
-        train_dataloader = build_dataloader(train_df, mode='train')
-        val_dataloader = build_dataloader(val_df, mode='val')
+        train_dataloader = build_dataloader(train_df, mode='train', config_path=config_name)
+        val_dataloader = build_dataloader(val_df, mode='val', config_path=config_name)
 
-        model = build_model(num_classes=num_crop_disease_classes)
+        model = build_model(num_classes=num_classes, use_cbam=True)
         model.to(device)
 
         cur_epoch = 1
         best_val_loss = float('inf')
         best_val_acc = float('-inf')
-        best_model_state = build_model(num_classes=num_crop_disease_classes)
+        best_model_state = build_model(num_classes=num_classes, use_cbam=True)
         best_model_state.to(device)
 
-        checkpoint_dir = config['checkpoint_dir']
-        checkpoint_name = config['checkpoint_name']
-        checkpoint_path = os.path.join(checkpoint_dir, checkpoint_name)
+        checkpoint = config['checkpoint']
+        checkpoint_path = os.path.join(checkpoint['dir'], checkpoint['name'])
 
         crop_disease_labels = train_df['crop_disease'].values
         class_weights = compute_class_weight(class_weight='balanced', classes=np.unique(crop_disease_labels), y=crop_disease_labels)
@@ -102,44 +104,54 @@ def main():
             print("No checkpoint found. Starting training from scratch.")
 
         print("Training model...")
+        patience = 10  # Early stopping patience (stop if no improvement for 10 epochs)
+        epochs_without_improvement = 0
+        
         for epoch in range(cur_epoch, num_epoch+1):
             train_loss = train_model(train_dataloader, model, device, optimizer, criterion)
             scheduler.step()
             val_loss, val_acc = validate_model(val_dataloader, model, device, criterion)
             print(f"Epoch [{epoch}/{num_epoch}]\nTrain Loss: {train_loss:.4f}, Validation Loss: {val_loss:.4f}, Validation Accuracy: {val_acc:.4f}")
 
-            write_training_log(epoch, train_loss, val_loss, val_acc)
+            write_training_log(config_name, epoch, train_loss, val_loss, val_acc)
 
             if val_loss < best_val_loss:
                 best_val_loss = val_loss
                 best_val_acc = val_acc
                 best_model_state = copy.deepcopy(model)
+                epochs_without_improvement = 0  # Reset counter when improvement is found
                 print("Best model saved.")
+            else:
+                epochs_without_improvement += 1
+                print(f"No improvement for {epochs_without_improvement}/{patience} epochs.")
                 
-            save_checkpoint(checkpoint_dir, checkpoint_name, best_model_state, optimizer, epoch + 1, best_val_loss, best_val_acc)
+            save_checkpoint(checkpoint['dir'], checkpoint['name'], best_model_state, optimizer, epoch + 1, best_val_loss, best_val_acc)
             print(f"Current best validation loss: {best_val_loss:.4f} and best validation accuracy: {best_val_acc:.4f}")
             print("Checkpoint saved.")
+
+            # Early stopping condition
+            if epochs_without_improvement >= patience:
+                print(f"Early stopping triggered! No improvement for {patience} epochs.")
+                break
 
             gc.collect()
             torch.cuda.empty_cache()
 
         fold_results.loc[i] = [i + 1, f"{best_val_loss:.4f}", f"{best_val_acc:.4f}"]
-        save_current_fold(training_log_dir, fold_results, fold_name=fold_results_name)
+        save_current_fold(fold_results_config['dir'], fold_results_config['backbone'], fold_results)
         print(f"Fold {i + 1} completed. Best validation loss: {best_val_loss:.4f} and best validation accuracy: {best_val_acc:.4f}")
 
         if i < k_fold - 1:
             os.remove(checkpoint_path) # Clean up checkpoint after each fold
 
-        backbone_dir = config['backbone_dir']
         backbone_name = f'backbone_fold_{i+1}.pth'
         save_model(backbone_dir, backbone_name, best_model_state)
 
     print("Evaluating ensemble models...")
     for i in range(k_fold):
-        backbone_dir = config['backbone_dir']
         backbone_name = f'backbone_fold_{i+1}.pth'
         backbone_path = os.path.join(backbone_dir, backbone_name)
-        backbone = build_model(num_crop_disease_classes)
+        backbone = build_model(num_classes, use_cbam=True)
         load_model(backbone_path, backbone)
         backbone.to(device)
         backbone_models.append(backbone)
@@ -150,8 +162,9 @@ def main():
     y_true_ensemble = []
     y_pred_ensemble = []
 
+    loop = tqdm(test_dataloader, desc='Evaluating ensemble', leave=False)
     with torch.no_grad():
-        for image, label in test_dataloader:
+        for image, label in loop:
             image, label = image.to(device), label.to(device)
             outputs = []
             
@@ -169,9 +182,10 @@ def main():
     
     accuracy = (y_true == y_pred).sum() / len(y_true)
     print(f"Ensemble Test Accuracy: {accuracy:.4f}")
-    classification_report_dir = config['classification_report_dir']
-    classification_report_name = config['backbone_classification_report_name']
-    save_classification_report(y_true, y_pred, crop_disease_classes, classification_report_dir, classification_report_name)
+    report_config = config['classification_report']
+    classification_report_dir = report_config['dir']
+    classification_report_name = report_config['backbone']
+    save_classification_report(y_true, y_pred, classes, classification_report_dir, classification_report_name)
 
     plot_dir = config['plot_dir']
     plot_name = 'backbone_confusion_matrix.png'
@@ -182,7 +196,7 @@ def main():
     print("Generating confusing matrix...")
     cm = confusion_matrix(y_true, y_pred)
     plt.figure(figsize=(20, 20))
-    sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', xticklabels=crop_disease_classes, yticklabels=crop_disease_classes)
+    sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', xticklabels=classes, yticklabels=classes)
     plt.xlabel('Predicted')
     plt.ylabel('True')
     plt.title('Confusion Matrix')

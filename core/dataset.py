@@ -1,7 +1,7 @@
 import os
-import torch
 import pandas as pd
 import numpy as np
+from tqdm import tqdm
 from pathlib import Path
 from PIL import Image
 from core.utils import get_transform, get_config, get_target_transform
@@ -29,12 +29,15 @@ class CropDiseaseDataset(Dataset):
         
         return image, crop_disease
 
-def load_dataset(data_dir):
+def load_dataset(config_path):
     images = []
     crop_diseases = []
 
+    config = get_config(config_path)
+    data_dir = config['dataset_dir']
     p = Path(data_dir)
-    for file in p.rglob('*'):
+    loop = tqdm(list(p.rglob('*')), desc='Loading dataset', leave=False)
+    for file in loop:
         if file.is_file():
             img = Image.open(file).convert('RGB')
             images.append(img)
@@ -50,9 +53,10 @@ def load_dataset(data_dir):
         'crop_disease': crop_diseases
     })
 
-    config = get_config()
-    classes_dir = config['classes_dir']
-    classes_file_name = config['classes_file_name']
+    config = get_config(config_path)
+    classes_config = config['classes']
+    classes_dir = classes_config['dir']
+    classes_file_name = classes_config['file_name']
     classes_path = os.path.join(classes_dir, classes_file_name)
     os.makedirs(classes_dir, exist_ok=True)
 
@@ -62,23 +66,23 @@ def load_dataset(data_dir):
 
     return df, crop_disease_classes
 
-def load_classes():
-    config = get_config()
-    classes_dir = config['classes_dir']
-    classes_file_name = config['classes_file_name']
+def load_classes(config_path):
+    config = get_config(config_path)
+    classes_config = config['classes']
+    classes_dir = classes_config['dir']
+    classes_file_name = classes_config['file_name']
     classes_path = os.path.join(classes_dir, classes_file_name)
     
     with open(classes_path, 'r') as f:
         classes = f.read().splitlines()
 
     return classes
-        
 
-def build_dataloader(df, mode: Literal['train', 'val', 'test']):
-    config = get_config()
+def build_dataloader(df, mode: Literal['train', 'val', 'test'], config_path):
+    config = get_config(config_path)
     batch_size = config['batch_size']
 
-    transform = get_transform(mode)
+    transform = get_transform(mode, config_path)
     target_transform = get_target_transform()
     dataset = CropDiseaseDataset(df, transform=transform, target_transform=target_transform)
     dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=(mode == 'train'))

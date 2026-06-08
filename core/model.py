@@ -1,10 +1,13 @@
 import os
 import torch
 from core.utils import get_device
-from models.efficientnet_b0 import get_cbam_efficientnet_b0
+from models.efficientnet_b0 import get_efficientnet_b0, get_cbam_efficientnet_b0
 
-def build_model(num_classes=16):
-    return get_cbam_efficientnet_b0(num_classes=num_classes)
+def build_model(num_classes=16, use_cbam=True):
+    if use_cbam:
+        return get_cbam_efficientnet_b0(num_classes=num_classes)
+    else:
+        return get_efficientnet_b0(num_classes=num_classes)
 
 def save_model(model_dir, model_name, model):
     os.makedirs(model_dir, exist_ok=True)

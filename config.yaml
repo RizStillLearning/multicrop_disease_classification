@@ -21,4 +21,4 @@ image_size: 224
 learning_rate: 0.001
 batch_size: 32
 k_fold: 5
-num_epoch: 50
+num_epoch: 100

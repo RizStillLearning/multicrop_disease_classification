@@ -1,0 +1,37 @@
+model_dir: "models/"
+dataset_dir: "data/"
+plot_dir: "efficientnet_cbam_svm/plots/"
+num_classes: 16
+image_size: 224
+learning_rate: 0.001
+batch_size: 32
+k_fold: 5
+num_epoch: 100
+
+classes:
+  dir: "classes/"
+  file_name: "classes.txt"
+
+checkpoint:
+  dir: "efficientnet_cbam_svm/checkpoints/"
+  name: "checkpoint.pth"
+
+backbone:
+  dir: "efficientnet_cbam_svm/backbone/"
+
+classifier:
+  dir: "efficientnet_cbam_svm/classifier/"
+  
+training_log:
+  dir: "efficientnet_cbam_svm/logs/"
+  name: "training_log.csv"
+
+fold_results:
+  dir: "efficientnet_cbam_svm/fold_results/"
+  backbone: "backbone_fold_results.csv"
+  classifier: "svm_fold_results.csv"
+
+classification_report:
+  dir: "efficientnet_cbam_svm/classification_reports/"
+  backbone: "backbone_classification_report.json"
+  svm: "svm_classification_report.json"

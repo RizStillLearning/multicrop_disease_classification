@@ -3,6 +3,7 @@ import torch
 import json
 import csv
 import numpy as np
+from tqdm import tqdm
 from core.utils import get_config
 from sklearn.metrics import classification_report
 
@@ -12,8 +13,9 @@ def validate_model(val_loader, model, device, criterion):
     correct = 0
     total = 0
 
+    loop = tqdm(val_loader, desc='Validation', leave=False)
     with torch.no_grad():
-        for images, crop_disease_labels in val_loader:
+        for images, crop_disease_labels in loop:
             images, crop_disease_labels = images.to(device), crop_disease_labels.to(device)
             output = model(images)
 
@@ -24,6 +26,8 @@ def validate_model(val_loader, model, device, criterion):
             total += crop_disease_labels.size(0)
             correct += (predicted == crop_disease_labels).sum().item()
 
+            loop.set_postfix(loss=loss.item(), accuracy=f"{correct/total:.4f}")
+
     loss = total_loss / len(val_loader)
     acc = correct / total
     return loss, acc    
@@ -32,7 +36,8 @@ def train_model(train_loader, model, device, optimizer, criterion):
     model.train()
     total_loss = 0
 
-    for images, crop_disease_labels in train_loader:
+    loop = tqdm(train_loader, desc='Training', leave=False)
+    for images, crop_disease_labels in loop:
         images, crop_disease_labels = images.to(device), crop_disease_labels.to(device)
 
         optimizer.zero_grad()
@@ -44,6 +49,7 @@ def train_model(train_loader, model, device, optimizer, criterion):
         optimizer.step()
 
         total_loss += loss.item()
+        loop.set_postfix(loss=loss.item())
 
     loss = total_loss / len(train_loader)
     return loss
@@ -96,10 +102,11 @@ def get_metrics_per_class(y_true, y_pred, target_names):
 
     return metrics
 
-def write_training_log(epoch, train_loss, val_loss, val_acc):
-    config = get_config()
-    file_name = config['training_log_name']
-    log_dir = config['training_log_dir']
+def write_training_log(config_path, epoch, train_loss, val_loss, val_acc):
+    config = get_config(config_path)
+    training_config = config['training_log']
+    file_name = training_config['name']
+    log_dir = training_config['dir']
     file_path = os.path.join(log_dir, file_name)
     os.makedirs(log_dir, exist_ok=True)
     mode = 'w' if epoch == 1 else 'a'
