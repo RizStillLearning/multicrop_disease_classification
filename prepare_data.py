@@ -119,7 +119,11 @@ def get_target_class(parent_name, filepath):
 def download_file(url, output_path):
     print(f"Downloading {url} to {output_path}...")
     ctx = ssl._create_unverified_context()
-    with urllib.request.urlopen(url, context=ctx) as response, open(output_path, 'wb') as out_file:
+    req = urllib.request.Request(
+        url, 
+        headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'}
+    )
+    with urllib.request.urlopen(req, context=ctx) as response, open(output_path, 'wb') as out_file:
         shutil.copyfileobj(response, out_file)
     print("Download completed.")
 
