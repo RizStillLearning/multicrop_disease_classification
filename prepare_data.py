@@ -213,6 +213,38 @@ def main():
         else:
             print(f"✓ {zip_file.name} already extracted.")
 
+    # Recursively extract any nested zip files
+    zip_found = True
+    while zip_found:
+        zip_found = False
+        nested_zips = list(extract_dir.rglob("*.zip"))
+        for nz in nested_zips:
+            nz_extract = nz.parent / nz.stem
+            if not nz_extract.exists():
+                print(f"Extracting nested zip {nz.name}...")
+                try:
+                    with zipfile.ZipFile(nz, 'r') as zip_ref:
+                        zip_ref.extractall(nz_extract)
+                    zip_found = True
+                except Exception as e:
+                    print(f"⚠️  Failed to extract nested zip {nz.name}: {e}")
+            try:
+                os.remove(nz)
+            except Exception:
+                pass
+
+    # Print extracted folder contents to help debug structure
+    print("\nExtracted directories found:")
+    for path in extract_dir.glob("*"):
+        if path.is_dir():
+            subdirs = [p.name for p in path.glob("*") if p.is_dir()]
+            print(f"  - {path.name}/ (contains: {', '.join(subdirs[:15])}{'...' if len(subdirs) > 15 else ''})")
+            # If no subdirs, check files
+            if not subdirs:
+                files = [p.name for p in path.glob("*") if p.is_file()]
+                print(f"    (contains files: {', '.join(files[:10])}{'...' if len(files) > 10 else ''})")
+
+
     # 4. Process and Merge into 16 Target Classes
     print("\n=== Processing and Organizing Images ===")
     
